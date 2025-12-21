@@ -23,10 +23,10 @@ export const createLead = async (req, res) => {
       "➡️ req.files:",
       req.files
         ? req.files.map((f) => ({
-            name: f.originalname,
-            size: f.size,
-            path: f.path,
-          }))
+          name: f.originalname,
+          size: f.size,
+          path: f.path,
+        }))
         : "NO FILES"
     );
 

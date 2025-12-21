@@ -7,33 +7,33 @@ import {
   getLeadById,
   updateLead,
   updateLeadStatus,
-  deleteLead,getAllLeadsBysalesId
+  deleteLead, getAllLeadsBysalesId
 } from "../controllers/lead.controller.js";
 import { auth, requireRole } from "../middleware/auth.middleware.js";
 const router = express.Router();
 
 /* CREATE LEAD WITH FILE UPLOAD */
 router.post(
-  "/addlead", 
+  "/addlead", auth, requireRole("employee"),
   upload.array("documents", 10),
   createLead
 );
 
-router.get("/getAllBysalesId",getAllLeadsBysalesId);
+router.get("/getAllBysalesId", auth, requireRole("employee"), getAllLeadsBysalesId);
 /* GET ALL LEADS */
-router.get("/getAll",getAllLeads);
-router.patch("/updatestatus/:id/status", updateLeadStatus);
+router.get("/getAll", auth, requireRole("admin"), getAllLeads);
+router.patch("/updatestatus/:id/status", auth, requireRole("admin"), updateLeadStatus);
 /* GET SINGLE LEAD */
-router.get("getById/:id", getLeadById);
+router.get("getById/:id", auth, requireRole("employee"), getLeadById);
 
 /* UPDATE FULL LEAD */
-router.put("/updatebyId/:id", updateLead);
+router.put("/updatebyId/:id", auth, requireRole("employee"), updateLead);
 
 /* UPDATE STATUS */
 
 
 /* DELETE LEAD */
-router.delete("/:id", deleteLead);
+router.delete("/:id", auth, requireRole("employee"), deleteLead);
 
 
 export default router;

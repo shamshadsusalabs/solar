@@ -7,7 +7,7 @@ import { auth, requireRole } from "../middleware/auth.middleware.js";
 const router = express.Router();
 
 router.get(
-  "/dashboard",
+  "/dashboard", auth, requireRole("admin"),
   getAdminDashboard
 );
 

@@ -17,7 +17,7 @@ router.post("/login", loginAdmin);
 router.post("/refresh-token", refreshAdminToken);
 
 // Protected (admin only)
-router.get("/me",  getAdminProfile);
-router.post("/logout", logoutAdmin);
+router.get("/me", auth, requireRole("admin"), getAdminProfile);
+router.post("/logout", auth, requireRole("admin"), logoutAdmin);
 
 export default router;
