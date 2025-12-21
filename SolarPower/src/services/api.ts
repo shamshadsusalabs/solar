@@ -1,6 +1,6 @@
 // src/services/api.ts
 
-export const BASE_URL = "http://10.124.128.86:3000";
+export const BASE_URL = "https://solar-uyzf.onrender.com";
 
 type RequestOptions = {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";

@@ -8,8 +8,7 @@ const router = express.Router();
 // GET /api/employee/dashboard
 router.get(
   "/dashboard",
-  auth,
-  requireRole("employee"),
+  
   getEmployeeDashboard
 );
 

@@ -17,8 +17,8 @@ router.post("/login", loginEmployee);
 router.post("/refresh-token", refreshEmployeeToken);
 
 // Protected (employee only)
-router.get("/me", auth, requireRole("employee"), getEmployeeProfile);
-router.post("/logout", auth, requireRole("employee"), logoutEmployee);
+router.get("/me",  getEmployeeProfile);
+router.post("/logout",  logoutEmployee);
 
 // Simple disk storage
 const upload = multer({
@@ -31,8 +31,7 @@ const upload = multer({
 // Aadhaar upload route
 router.patch(
   "/aadhaar",
-  auth,
-  requireRole("employee"),
+  
   upload.single("aadhaarFile"), // 👈 field name from frontend
   uploadEmployeeAadhaar
 );
@@ -40,12 +39,11 @@ router.patch(
 // Aadhaar filled status
 router.get(
   "/aadhaar/status",
-  auth,
-  requireRole("employee"),
+  
   getEmployeeAadhaarStatus
 );
 
-router.get("/employees", auth, requireRole("admin"), getAllEmployeesForAdmin);
+router.get("/employees",  getAllEmployeesForAdmin);
 
 export default router;
 

@@ -14,15 +14,15 @@ const router = express.Router();
 
 /* CREATE LEAD WITH FILE UPLOAD */
 router.post(
-  "/addlead", auth, requireRole("employee"),
+  "/addlead", 
   upload.array("documents", 10),
   createLead
 );
 
-router.get("/getAllBysalesId",auth, requireRole("employee"), getAllLeadsBysalesId);
+router.get("/getAllBysalesId",getAllLeadsBysalesId);
 /* GET ALL LEADS */
-router.get("/getAll",auth, requireRole("admin"), getAllLeads);
-router.patch("/updatestatus/:id/status",auth, requireRole("admin"), updateLeadStatus);
+router.get("/getAll",getAllLeads);
+router.patch("/updatestatus/:id/status", updateLeadStatus);
 /* GET SINGLE LEAD */
 router.get("getById/:id", getLeadById);
 

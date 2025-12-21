@@ -8,7 +8,6 @@ const router = express.Router();
 
 router.get(
   "/dashboard",
-auth, requireRole("admin"), 
   getAdminDashboard
 );
 
