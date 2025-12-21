@@ -5,8 +5,8 @@ import jwt from "jsonwebtoken";
 const ACCESS_TOKEN_SECRET = "your-access-token-secret-key";
 const REFRESH_TOKEN_SECRET = "your-refresh-token-secret-key";
 
-const ACCESS_TOKEN_EXPIRY = "15m";
-const REFRESH_TOKEN_EXPIRY = "7d";
+const ACCESS_TOKEN_EXPIRY = "7d";
+const REFRESH_TOKEN_EXPIRY = "30d";
 
 export const generateTokens = (user) => {
   const payload = {
