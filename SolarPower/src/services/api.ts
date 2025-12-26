@@ -1,6 +1,10 @@
 // src/services/api.ts
 
-export const BASE_URL = "https://solar-uyzf.onrender.com";
+// 🚀 Production URL
+// export const BASE_URL = "https://academic-417815.el.r.appspot.com";
+
+// 🏠 Local Development URL (Laptop WiFi IP)
+export const BASE_URL = "http://10.28.240.86:3000";
 
 type RequestOptions = {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";

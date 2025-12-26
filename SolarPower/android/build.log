@@ -1,0 +1,309 @@
+> Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:shared:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:shared:compileJava NO-SOURCE
+> Task :gradle-plugin:shared:processResources NO-SOURCE
+> Task :gradle-plugin:shared:classes UP-TO-DATE
+> Task :gradle-plugin:shared:jar UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:settings-plugin:pluginDescriptors UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:processResources UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:classes UP-TO-DATE
+> Task :gradle-plugin:settings-plugin:jar UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle-plugin:react-native-gradle-plugin:compileKotlin UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:processResources UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:classes UP-TO-DATE
+> Task :gradle-plugin:react-native-gradle-plugin:jar UP-TO-DATE
+> Task :app:generateAutolinkingNewArchitectureFiles UP-TO-DATE
+> Task :app:generateAutolinkingPackageList UP-TO-DATE
+> Task :app:generateCodegenSchemaFromJavaScript SKIPPED
+> Task :app:generateCodegenArtifactsFromSchema SKIPPED
+> Task :app:generateReactNativeEntryPoint UP-TO-DATE
+> Task :react-native-async-storage_async-storage:generateCodegenSchemaFromJavaScript UP-TO-DATE
+> Task :react-native-async-storage_async-storage:generateCodegenArtifactsFromSchema UP-TO-DATE
+> Task :react-native-async-storage_async-storage:preBuild UP-TO-DATE
+> Task :react-native-documents_picker:generateCodegenSchemaFromJavaScript UP-TO-DATE
+> Task :react-native-documents_picker:generateCodegenArtifactsFromSchema UP-TO-DATE
+> Task :react-native-documents_picker:preBuild UP-TO-DATE
+> Task :react-native-image-picker:generateCodegenSchemaFromJavaScript UP-TO-DATE
+> Task :react-native-image-picker:generateCodegenArtifactsFromSchema UP-TO-DATE
+> Task :react-native-image-picker:preBuild UP-TO-DATE
+> Task :react-native-reanimated:assertMinimalReactNativeVersionTask
+> Task :react-native-reanimated:assertNewArchitectureEnabledTask SKIPPED
+> Task :react-native-reanimated:assertWorkletsVersionTask
+> Task :react-native-reanimated:generateCodegenSchemaFromJavaScript UP-TO-DATE
+> Task :react-native-reanimated:generateCodegenArtifactsFromSchema UP-TO-DATE
+> Task :react-native-reanimated:prepareReanimatedHeadersForPrefabs UP-TO-DATE
+> Task :react-native-reanimated:preBuild
+> Task :react-native-safe-area-context:generateCodegenSchemaFromJavaScript UP-TO-DATE
+> Task :react-native-safe-area-context:generateCodegenArtifactsFromSchema UP-TO-DATE
+> Task :react-native-safe-area-context:preBuild UP-TO-DATE
+> Task :react-native-svg:generateCodegenSchemaFromJavaScript UP-TO-DATE
+> Task :react-native-svg:generateCodegenArtifactsFromSchema UP-TO-DATE
+> Task :react-native-svg:preBuild UP-TO-DATE
+> Task :react-native-vector-icons:generateCodegenSchemaFromJavaScript UP-TO-DATE
+> Task :react-native-vector-icons:generateCodegenArtifactsFromSchema UP-TO-DATE
+> Task :react-native-vector-icons:preBuild UP-TO-DATE
+> Task :react-native-worklets:assertMinimalReactNativeVersionTask
+> Task :react-native-worklets:assertNewArchitectureEnabledTask SKIPPED
+> Task :react-native-worklets:generateCodegenSchemaFromJavaScript UP-TO-DATE
+> Task :react-native-worklets:generateCodegenArtifactsFromSchema UP-TO-DATE
+> Task :react-native-worklets:prepareWorkletsHeadersForPrefabs UP-TO-DATE
+> Task :react-native-worklets:preBuild
+> Task :app:preBuild
+> Task :app:preDebugBuild
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :react-native-async-storage_async-storage:preDebugBuild UP-TO-DATE
+> Task :react-native-async-storage_async-storage:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-documents_picker:preDebugBuild UP-TO-DATE
+> Task :react-native-documents_picker:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-image-picker:preDebugBuild UP-TO-DATE
+> Task :react-native-image-picker:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-reanimated:preDebugBuild
+> Task :react-native-reanimated:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-safe-area-context:preDebugBuild UP-TO-DATE
+> Task :react-native-safe-area-context:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-svg:preDebugBuild UP-TO-DATE
+> Task :react-native-svg:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-vector-icons:preDebugBuild UP-TO-DATE
+> Task :react-native-vector-icons:writeDebugAarMetadata UP-TO-DATE
+> Task :react-native-worklets:preDebugBuild
+> Task :react-native-worklets:writeDebugAarMetadata UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :react-native-async-storage_async-storage:generateDebugResValues UP-TO-DATE
+> Task :react-native-async-storage_async-storage:generateDebugResources UP-TO-DATE
+> Task :react-native-async-storage_async-storage:packageDebugResources UP-TO-DATE
+> Task :react-native-documents_picker:generateDebugResValues UP-TO-DATE
+> Task :react-native-documents_picker:generateDebugResources UP-TO-DATE
+> Task :react-native-documents_picker:packageDebugResources UP-TO-DATE
+> Task :react-native-image-picker:generateDebugResValues UP-TO-DATE
+> Task :react-native-image-picker:generateDebugResources UP-TO-DATE
+> Task :react-native-image-picker:packageDebugResources UP-TO-DATE
+> Task :react-native-reanimated:generateDebugResValues UP-TO-DATE
+> Task :react-native-reanimated:generateDebugResources UP-TO-DATE
+> Task :react-native-reanimated:packageDebugResources UP-TO-DATE
+> Task :react-native-safe-area-context:generateDebugResValues UP-TO-DATE
+> Task :react-native-safe-area-context:generateDebugResources UP-TO-DATE
+> Task :react-native-safe-area-context:packageDebugResources UP-TO-DATE
+> Task :react-native-svg:generateDebugResValues UP-TO-DATE
+> Task :react-native-svg:generateDebugResources UP-TO-DATE
+> Task :react-native-svg:packageDebugResources UP-TO-DATE
+> Task :react-native-vector-icons:generateDebugResValues UP-TO-DATE
+> Task :react-native-vector-icons:generateDebugResources UP-TO-DATE
+> Task :react-native-vector-icons:packageDebugResources UP-TO-DATE
+> Task :react-native-worklets:generateDebugResValues UP-TO-DATE
+> Task :react-native-worklets:generateDebugResources UP-TO-DATE
+> Task :react-native-worklets:packageDebugResources UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-async-storage_async-storage:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-async-storage_async-storage:processDebugManifest UP-TO-DATE
+> Task :react-native-documents_picker:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-documents_picker:processDebugManifest UP-TO-DATE
+> Task :react-native-image-picker:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-image-picker:processDebugManifest UP-TO-DATE
+> Task :react-native-reanimated:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-reanimated:processDebugManifest UP-TO-DATE
+> Task :react-native-safe-area-context:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-safe-area-context:processDebugManifest UP-TO-DATE
+> Task :react-native-svg:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-svg:processDebugManifest UP-TO-DATE
+> Task :react-native-vector-icons:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-vector-icons:processDebugManifest UP-TO-DATE
+> Task :react-native-worklets:extractDeepLinksDebug UP-TO-DATE
+> Task :react-native-worklets:processDebugManifest UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :react-native-async-storage_async-storage:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-async-storage_async-storage:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-async-storage_async-storage:generateDebugRFile UP-TO-DATE
+> Task :react-native-documents_picker:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-documents_picker:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-documents_picker:generateDebugRFile UP-TO-DATE
+> Task :react-native-image-picker:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-image-picker:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-image-picker:generateDebugRFile UP-TO-DATE
+> Task :react-native-reanimated:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-reanimated:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-reanimated:generateDebugRFile UP-TO-DATE
+> Task :react-native-safe-area-context:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-safe-area-context:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-safe-area-context:generateDebugRFile UP-TO-DATE
+> Task :react-native-svg:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-svg:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-svg:generateDebugRFile UP-TO-DATE
+> Task :react-native-vector-icons:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-vector-icons:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-vector-icons:generateDebugRFile UP-TO-DATE
+> Task :react-native-worklets:compileDebugLibraryResources UP-TO-DATE
+> Task :react-native-worklets:parseDebugLocalResources UP-TO-DATE
+> Task :react-native-worklets:generateDebugRFile UP-TO-DATE
+> Task :react-native-async-storage_async-storage:generateDebugBuildConfig UP-TO-DATE
+> Task :react-native-async-storage_async-storage:javaPreCompileDebug UP-TO-DATE
+
+> Task :react-native-async-storage_async-storage:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: /Users/apple/Desktop/shamshad/solar/SolarPower/node_modules/@react-native-async-storage/async-storage/android/src/javaPackage/java/com/reactnativecommunity/asyncstorage/AsyncStoragePackage.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-documents_picker:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-documents_picker:generateDebugBuildConfig
+> Task :react-native-async-storage_async-storage:bundleLibCompileToJarDebug
+> Task :react-native-documents_picker:javaPreCompileDebug
+> Task :react-native-image-picker:generateDebugBuildConfig
+> Task :react-native-image-picker:javaPreCompileDebug
+> Task :react-native-reanimated:generateDebugBuildConfig
+> Task :app:processDebugResources
+
+> Task :react-native-image-picker:compileDebugJavaWithJavac
+Note: /Users/apple/Desktop/shamshad/solar/SolarPower/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerPackage.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-image-picker:bundleLibCompileToJarDebug
+> Task :react-native-reanimated:javaPreCompileDebug
+> Task :react-native-worklets:generateDebugBuildConfig
+> Task :react-native-safe-area-context:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :react-native-worklets:javaPreCompileDebug
+> Task :react-native-safe-area-context:generateDebugBuildConfig
+
+> Task :react-native-worklets:compileDebugJavaWithJavac
+Note: /Users/apple/Desktop/shamshad/solar/SolarPower/node_modules/react-native-worklets/android/src/main/java/com/swmansion/worklets/WorkletsMessageQueueThreadBase.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: /Users/apple/Desktop/shamshad/solar/SolarPower/node_modules/react-native-worklets/android/src/main/java/com/swmansion/worklets/WorkletsPackage.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-worklets:bundleLibCompileToJarDebug
+
+> Task :react-native-reanimated:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-reanimated:bundleLibCompileToJarDebug
+> Task :react-native-safe-area-context:javaPreCompileDebug
+> Task :react-native-svg:generateDebugBuildConfig
+> Task :react-native-svg:javaPreCompileDebug
+> Task :react-native-vector-icons:generateDebugBuildConfig
+> Task :react-native-documents_picker:compileDebugKotlin
+
+> Task :react-native-svg:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :react-native-svg:bundleLibCompileToJarDebug
+> Task :react-native-vector-icons:javaPreCompileDebug
+> Task :app:javaPreCompileDebug
+
+> Task :react-native-vector-icons:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :react-native-vector-icons:bundleLibCompileToJarDebug
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :react-native-async-storage_async-storage:mergeDebugShaders
+> Task :react-native-async-storage_async-storage:compileDebugShaders NO-SOURCE
+> Task :react-native-async-storage_async-storage:generateDebugAssets UP-TO-DATE
+> Task :react-native-async-storage_async-storage:mergeDebugAssets
+> Task :react-native-documents_picker:mergeDebugShaders
+> Task :react-native-documents_picker:compileDebugShaders NO-SOURCE
+> Task :react-native-documents_picker:generateDebugAssets UP-TO-DATE
+> Task :react-native-documents_picker:mergeDebugAssets
+> Task :react-native-image-picker:mergeDebugShaders
+> Task :react-native-image-picker:compileDebugShaders NO-SOURCE
+> Task :react-native-image-picker:generateDebugAssets UP-TO-DATE
+> Task :react-native-image-picker:mergeDebugAssets
+> Task :react-native-reanimated:mergeDebugShaders
+> Task :react-native-reanimated:compileDebugShaders NO-SOURCE
+> Task :react-native-reanimated:generateDebugAssets UP-TO-DATE
+> Task :react-native-reanimated:mergeDebugAssets
+> Task :react-native-safe-area-context:mergeDebugShaders
+> Task :react-native-safe-area-context:compileDebugShaders NO-SOURCE
+> Task :react-native-safe-area-context:generateDebugAssets UP-TO-DATE
+> Task :react-native-safe-area-context:mergeDebugAssets
+> Task :react-native-svg:mergeDebugShaders
+> Task :react-native-svg:compileDebugShaders NO-SOURCE
+> Task :react-native-svg:generateDebugAssets UP-TO-DATE
+> Task :react-native-svg:mergeDebugAssets
+> Task :react-native-vector-icons:mergeDebugShaders
+> Task :react-native-vector-icons:compileDebugShaders NO-SOURCE
+> Task :react-native-vector-icons:generateDebugAssets UP-TO-DATE
+> Task :react-native-vector-icons:mergeDebugAssets
+> Task :react-native-worklets:mergeDebugShaders
+> Task :react-native-worklets:compileDebugShaders NO-SOURCE
+> Task :react-native-worklets:generateDebugAssets UP-TO-DATE
+> Task :react-native-worklets:mergeDebugAssets
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :react-native-async-storage_async-storage:bundleLibRuntimeToJarDebug
+> Task :react-native-image-picker:bundleLibRuntimeToJarDebug
+> Task :react-native-safe-area-context:compileDebugKotlin
+> Task :react-native-reanimated:bundleLibRuntimeToJarDebug
+> Task :react-native-svg:bundleLibRuntimeToJarDebug
+> Task :react-native-vector-icons:bundleLibRuntimeToJarDebug
+> Task :react-native-worklets:bundleLibRuntimeToJarDebug
+> Task :app:desugarDebugFileDependencies
+> Task :react-native-async-storage_async-storage:processDebugJavaRes NO-SOURCE
+> Task :react-native-image-picker:processDebugJavaRes NO-SOURCE
+> Task :react-native-reanimated:processDebugJavaRes NO-SOURCE
+> Task :react-native-svg:processDebugJavaRes NO-SOURCE
+> Task :react-native-vector-icons:processDebugJavaRes NO-SOURCE
+> Task :react-native-worklets:processDebugJavaRes NO-SOURCE
+> Task :app:checkDebugDuplicateClasses
+
+> Task :react-native-safe-area-context:compileDebugKotlin
+w: file:///Users/apple/Desktop/shamshad/solar/SolarPower/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:9:8 'class UIManagerModule : ReactContextBaseJavaModule, OnBatchCompleteListener, LifecycleEventListener, UIManager' is deprecated. Deprecated in Java.
+w: file:///Users/apple/Desktop/shamshad/solar/SolarPower/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:50:54 'class UIManagerModule : ReactContextBaseJavaModule, OnBatchCompleteListener, LifecycleEventListener, UIManager' is deprecated. Deprecated in Java.
+w: file:///Users/apple/Desktop/shamshad/solar/SolarPower/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:59:23 'val uiImplementation: UIImplementation!' is deprecated. Deprecated in Java.
+w: file:///Users/apple/Desktop/shamshad/solar/SolarPower/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaViewShadowNode.kt:9:32 'class LayoutShadowNode : ReactShadowNodeImpl' is deprecated. Deprecated in Java.
+w: file:///Users/apple/Desktop/shamshad/solar/SolarPower/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaViewShadowNode.kt:110:61 'class NativeViewHierarchyOptimizer : Any' is deprecated. Deprecated in Java.
+
+> Task :react-native-documents_picker:compileDebugJavaWithJavac
+> Task :react-native-documents_picker:bundleLibCompileToJarDebug
+> Task :react-native-safe-area-context:compileDebugJavaWithJavac
+> Task :react-native-safe-area-context:bundleLibCompileToJarDebug
+> Task :react-native-documents_picker:bundleLibRuntimeToJarDebug
+> Task :react-native-safe-area-context:bundleLibRuntimeToJarDebug
+> Task :react-native-documents_picker:processDebugJavaRes
+> Task :react-native-safe-area-context:processDebugJavaRes
+> Task :react-native-documents_picker:bundleLibRuntimeToDirDebug
+> Task :react-native-safe-area-context:bundleLibRuntimeToDirDebug
+> Task :react-native-async-storage_async-storage:bundleLibRuntimeToDirDebug
+> Task :react-native-image-picker:bundleLibRuntimeToDirDebug
+> Task :react-native-reanimated:bundleLibRuntimeToDirDebug
+> Task :react-native-svg:bundleLibRuntimeToDirDebug
+> Task :react-native-vector-icons:bundleLibRuntimeToDirDebug
+> Task :react-native-worklets:bundleLibRuntimeToDirDebug
+> Task :app:mergeExtDexDebug
+> Task :app:compileDebugKotlin
+> Task :react-native-worklets:configureCMakeDebug[arm64-v8a]
+> Task :app:compileDebugJavaWithJavac
+> Task :app:dexBuilderDebug
+> Task :app:processDebugJavaRes
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:mergeProjectDexDebug
+> Task :app:mergeLibDexDebug
+> Task :app:mergeDebugJavaResource
+> Task :react-native-worklets:buildCMakeDebug[arm64-v8a][worklets]
+> Task :react-native-worklets:configureCMakeDebug[armeabi-v7a]
+> Task :react-native-worklets:buildCMakeDebug[armeabi-v7a][worklets]
+> Task :react-native-worklets:configureCMakeDebug[x86]
+> Task :react-native-worklets:buildCMakeDebug[x86][worklets]

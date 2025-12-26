@@ -67,6 +67,9 @@ export const loginEmployee = async (req, res) => {
 
     const employee = await Employee.findOne({ employeeCode });
 
+    console.log(`🔍 Login attempt for employeeCode: "${employeeCode}"`);
+    console.log(`📋 Employee found:`, employee ? `Yes (${employee.name})` : 'No');
+
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });
     }
@@ -117,7 +120,7 @@ export const getEmployeeProfile = async (req, res) => {
     const employeeId = req.user.id; // auth middleware se aaya
 
     const employee = await Employee.findById(employeeId).select(
-      "_id employeeCode name phoneNumber role isVerified createdAt aadhaarNumber aadhaarUrl"
+      "_id employeeCode name phoneNumber role isVerified createdAt aadhaarNumber aadhaarUrl aadhaarVerified"
     );
 
     if (!employee) {
@@ -134,6 +137,7 @@ export const getEmployeeProfile = async (req, res) => {
         isVerified: employee.isVerified,
         aadhaarNumber: employee.aadhaarNumber,
         aadhaarUrl: employee.aadhaarUrl,
+        aadhaarVerified: employee.aadhaarVerified,
         createdAt: employee.createdAt,
       },
     });
@@ -226,13 +230,28 @@ export const uploadEmployeeAadhaar = async (req, res) => {
     const employeeId = req.user.id; // auth + employee se aa raha hai
     const { aadhaarNumber } = req.body;
 
+    console.log("📤 Aadhaar Upload Request:");
+    console.log("  Employee ID:", employeeId);
+    console.log("  Aadhaar Number:", aadhaarNumber);
+    console.log("  File received:", req.file ? "Yes" : "No");
+    if (req.file) {
+      console.log("  File details:", {
+        filename: req.file.filename,
+        path: req.file.path,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+      });
+    }
+
     if (!aadhaarNumber || !req.file) {
+      console.log("❌ Validation failed: Missing aadhaar number or file");
       return res
         .status(400)
         .json({ message: "Aadhaar number & file are required" });
     }
 
     if (aadhaarNumber.length !== 12) {
+      console.log("❌ Validation failed: Aadhaar number not 12 digits");
       return res
         .status(400)
         .json({ message: "Aadhaar number must be 12 digits" });
@@ -339,7 +358,7 @@ export const getAllEmployeesForAdmin = async (req, res) => {
     const [employees, total] = await Promise.all([
       Employee.find(query)
         .select(
-          "_id employeeCode name phoneNumber aadhaarNumber aadhaarUrl isFilled role createdAt"
+          "_id employeeCode name phoneNumber aadhaarNumber aadhaarUrl aadhaarVerified isFilled role createdAt"
         )
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -358,6 +377,172 @@ export const getAllEmployeesForAdmin = async (req, res) => {
     });
   } catch (err) {
     console.error("getAllEmployeesForAdmin error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/**
+ * PATCH /api/employee/auth/:employeeId
+ * ✅ Admin can update employee details
+ * body: { name?, phoneNumber?, password? }
+ */
+export const updateEmployee = async (req, res) => {
+  try {
+    // ✅ Role check – sirf admin ko allow
+    if (!req.user || req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Access denied. Admins only." });
+    }
+
+    const { employeeId } = req.params;
+    const { name, phoneNumber, password } = req.body;
+
+    if (!employeeId) {
+      return res.status(400).json({ message: "Employee ID required" });
+    }
+
+    // Find employee
+    const employee = await Employee.findById(employeeId);
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    // Update fields if provided
+    if (name) employee.name = name;
+    if (phoneNumber) {
+      // Check if phoneNumber already exists for another employee
+      const existing = await Employee.findOne({
+        phoneNumber,
+        _id: { $ne: employeeId },
+      });
+      if (existing) {
+        return res
+          .status(409)
+          .json({ message: "Phone number already exists" });
+      }
+      employee.phoneNumber = phoneNumber;
+    }
+
+    // Password update (will be hashed by pre-save hook)
+    if (password) {
+      employee.password = password;
+    }
+
+    await employee.save();
+
+    return res.status(200).json({
+      message: "Employee updated successfully",
+      employee: {
+        id: employee._id,
+        employeeCode: employee.employeeCode,
+        name: employee.name,
+        phoneNumber: employee.phoneNumber,
+        role: employee.role,
+        isFilled: employee.isFilled,
+      },
+    });
+  } catch (err) {
+    console.error("updateEmployee error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/**
+ * DELETE /api/employee/auth/:employeeId
+ * ✅ Admin can delete employee
+ */
+export const deleteEmployee = async (req, res) => {
+  try {
+    // ✅ Role check – sirf admin ko allow
+    if (!req.user || req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Access denied. Admins only." });
+    }
+
+    const { employeeId } = req.params;
+
+    if (!employeeId) {
+      return res.status(400).json({ message: "Employee ID required" });
+    }
+
+    // Find and delete employee
+    const employee = await Employee.findByIdAndDelete(employeeId);
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    return res.status(200).json({
+      message: "Employee deleted successfully",
+      deletedEmployee: {
+        id: employee._id,
+        employeeCode: employee.employeeCode,
+        name: employee.name,
+      },
+    });
+  } catch (err) {
+    console.error("deleteEmployee error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/**
+ * PATCH /api/employee/auth/aadhaar/verify/:employeeId
+ * ✅ Admin can approve or reject employee Aadhaar
+ * body: { status: "approved" | "rejected" }
+ */
+export const verifyEmployeeAadhaar = async (req, res) => {
+  try {
+    // ✅ Role check – sirf admin ko allow
+    if (!req.user || req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Access denied. Admins only." });
+    }
+
+    const { employeeId } = req.params;
+    const { status } = req.body;
+
+    console.log("📝 Aadhaar Verification Request:");
+    console.log("  Employee ID:", employeeId);
+    console.log("  Status:", status);
+
+    if (!employeeId) {
+      return res.status(400).json({ message: "Employee ID required" });
+    }
+
+    if (!status || !["approved", "rejected"].includes(status)) {
+      return res.status(400).json({
+        message: "Invalid status. Use 'approved' or 'rejected'",
+      });
+    }
+
+    // Find and update employee
+    const employee = await Employee.findByIdAndUpdate(
+      employeeId,
+      {
+        $set: { aadhaarVerified: status },
+      },
+      { new: true }
+    ).select(
+      "_id employeeCode name aadhaarNumber aadhaarUrl aadhaarVerified isFilled"
+    );
+
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+
+    console.log("✅ Aadhaar verification updated:", status);
+
+    return res.status(200).json({
+      message: `Aadhaar ${status === "approved" ? "approved" : "rejected"} successfully`,
+      employee,
+    });
+  } catch (err) {
+    console.error("verifyEmployeeAadhaar error:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };

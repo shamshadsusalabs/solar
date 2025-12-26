@@ -47,3 +47,32 @@ export const logoutAdminService = async (accessToken: string) => {
     }
   );
 };
+
+// 📝 Update admin profile
+export const updateAdminProfileService = async (
+  body: {
+    email?: string;
+    phoneNumber?: string;
+    password?: string;
+  },
+  accessToken: string
+) => {
+  const data = await apiFetch<{
+    message: string;
+    admin: {
+      id: string;
+      email: string;
+      phoneNumber: string;
+      role: string;
+    };
+  }>(
+    "/api/admin/auth/update",
+    {
+      method: "PUT",
+      body,
+      token: accessToken,
+    }
+  );
+
+  return data;
+};

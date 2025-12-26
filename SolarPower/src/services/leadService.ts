@@ -2,18 +2,17 @@
 import { apiFetch } from "./api";
 
 export type LeadStatus =
-  | "UNDER_DISCUSSION"
-  | "DOCUMENT_RECEIVED"
-  | "DOCUMENT_UPLOAD_OVER_PORTAL"
-  | "FILE_SEND_TO_BANK"
-  | "FUNDS_DISBURSED_BY_BANK"
-  | "MERGED_DOCUMENT_UPLOAD"
-  | "MATERIAL_DELIVERED"
+  | "INTERESTED_CUSTOMERS"
+  | "DOCUMENTS_RECEIVED"
+  | "DOCUMENTS_UPLOADED_ON_PORTAL"
+  | "FILE_SENT_TO_BANK"
+  | "PAYMENT_RECEIVED"
+  | "SYSTEM_DELIVERED"
   | "SYSTEM_INSTALLED"
   | "SYSTEM_COMMISSIONED"
   | "SUBSIDY_REDEEMED"
-  | "LEAD_CLOSED"
-  | "REFERRAL_RECEIVED";
+  | "SUBSIDY_DISBURSED"
+  | "LEAD_CLOSE";
 
 export interface LeadDocument {
   fileName: string;
@@ -29,16 +28,19 @@ export interface Lead {
   customerName: string;
   contactNumber: string;
   addressText: string;
-  gpsLocation?: string;
 
   documents: LeadDocument[];
 
-  rtsCapacityKw?: number;
-  roofTopCapacityKw?: number;
-  tropositeAmount?: number;
+  requiredSystemCapacity?: string;
+  systemCostQuoted?: number;
 
-  bankName?: string;
-  bankDetails?: string;
+  bankAccountName?: string;
+  ifscCode?: string;
+  branchDetails?: string;
+
+  textInstructions?: string;
+
+  compiledFile?: string; // Cloudinary URL for compiled PDF
 
   status: LeadStatus;
   createdAt: string;
@@ -112,14 +114,15 @@ export const getLeadByIdService = async (
 };
 
 /**
- * Update full lead – PUT /api/leads/:id
+ * Update full lead – PUT /api/leads/updatebyId/:id
+ * Accepts both FormData (for files) and JSON body
  */
 export const updateLeadService = async (
   id: string,
-  body: Partial<Lead>,
+  body: FormData | Partial<Lead>,
   accessToken: string
 ) => {
-  const data = await apiFetch<LeadResponse>(`/api/leads/${id}`, {
+  const data = await apiFetch<LeadResponse>(`/api/leads/updatebyId/${id}`, {
     method: "PUT",
     body,
     token: accessToken,
@@ -147,6 +150,23 @@ export const deleteLeadService = async (
       token: accessToken,
     }
   );
+
+  return data;
+};
+
+/**
+ * Update lead status by employee - PATCH /api/leads/employee/updatestatus/:id/status
+ */
+export const updateEmployeeLeadStatusService = async (
+  leadId: string,
+  status: LeadStatus,
+  accessToken: string
+) => {
+  const data = await apiFetch<{ success: boolean; data: Lead }>(`/api/leads/employee/updatestatus/${leadId}/status`, {
+    method: "PATCH",
+    token: accessToken,
+    body: { status },
+  });
 
   return data;
 };
@@ -211,11 +231,140 @@ export const updateLeadStatusService = async (
 
 
 // 👇 admin side – get ALL leads (no filter) – GET /api/leads/getAll
-export const getAllLeadsAdminService = async (accessToken: string) => {
-  const data = await apiFetch<LeadListResponse>("/api/leads/getAll", {
+export const getAllLeadsAdminService = async (
+  accessToken: string,
+  contactNumber?: string
+) => {
+  const searchParams = new URLSearchParams();
+  if (contactNumber) {
+    searchParams.append("contactNumber", contactNumber);
+  }
+
+  const query = searchParams.toString();
+  const url = `/api/leads/getAll${query ? `?${query}` : ""}`;
+
+  const data = await apiFetch<LeadListResponse>(url, {
     method: "GET",
     token: accessToken,
   });
 
   return data;
 };
+
+// 👇 MANAGER: get ALL leads – GET /api/leads/manager/getAll
+export const getAllLeadsManagerService = async (
+  accessToken: string,
+  contactNumber?: string
+) => {
+  const searchParams = new URLSearchParams();
+  if (contactNumber) {
+    searchParams.append("contactNumber", contactNumber);
+  }
+
+  const query = searchParams.toString();
+  const url = `/api/leads/manager/getAll${query ? `?${query}` : ""}`;
+
+  const data = await apiFetch<LeadListResponse>(url, {
+    method: "GET",
+    token: accessToken,
+  });
+
+  return data;
+};
+
+// 👇 MANAGER: update lead status – PATCH /api/leads/manager/updatestatus/:id/status
+export const updateLeadStatusManagerService = async (
+  id: string,
+  status: LeadStatus,
+  accessToken: string
+) => {
+  const data = await apiFetch<LeadResponse>(
+    `/api/leads/manager/updatestatus/${id}/status`,
+    {
+      method: "PATCH",
+      body: { status },
+      token: accessToken,
+    }
+  );
+
+  return data;
+};
+
+// 👇 CHIEF: get ALL leads – GET /api/leads/chief/getAll
+export const getAllLeadsChiefService = async (
+  accessToken: string,
+  contactNumber?: string
+) => {
+  const searchParams = new URLSearchParams();
+  if (contactNumber) {
+    searchParams.append("contactNumber", contactNumber);
+  }
+
+  const query = searchParams.toString();
+  const url = `/api/leads/chief/getAll${query ? `?${query}` : ""}`;
+
+  const data = await apiFetch<LeadListResponse>(url, {
+    method: "GET",
+    token: accessToken,
+  });
+
+  return data;
+};
+
+// 👇 CHIEF: update lead status – PATCH /api/leads/chief/updatestatus/:id/status
+export const updateLeadStatusChiefService = async (
+  id: string,
+  status: LeadStatus,
+  accessToken: string
+) => {
+  const data = await apiFetch<LeadResponse>(
+    `/api/leads/chief/updatestatus/${id}/status`,
+    {
+      method: "PATCH",
+      body: { status },
+      token: accessToken,
+    }
+  );
+
+  return data;
+};
+
+// 👇 GODOWN INCHARGE: get ALL leads – GET /api/leads/godown-incharge/getAll
+export const getAllLeadsGodownInchargeService = async (
+  accessToken: string,
+  contactNumber?: string
+) => {
+  const searchParams = new URLSearchParams();
+  if (contactNumber) {
+    searchParams.append("contactNumber", contactNumber);
+  }
+
+  const query = searchParams.toString();
+  const url = `/api/leads/godown-incharge/getAll${query ? `?${query}` : ""}`;
+
+  const data = await apiFetch<LeadListResponse>(url, {
+    method: "GET",
+    token: accessToken,
+  });
+
+  return data;
+};
+
+// 👇 GODOWN INCHARGE: update lead status – PATCH /api/leads/godown-incharge/updatestatus/:id/status
+export const updateLeadStatusGodownInchargeService = async (
+  id: string,
+  status: LeadStatus,
+  accessToken: string
+) => {
+  const data = await apiFetch<LeadResponse>(
+    `/api/leads/godown-incharge/updatestatus/${id}/status`,
+    {
+      method: "PATCH",
+      body: { status },
+      token: accessToken,
+    }
+  );
+
+  return data;
+};
+

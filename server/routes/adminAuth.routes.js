@@ -4,6 +4,7 @@ import {
   registerAdmin,
   loginAdmin,
   getAdminProfile,
+  updateAdminProfile,
   logoutAdmin,
   refreshAdminToken,
 } from "../controllers/adminAuth.controller.js";
@@ -18,6 +19,8 @@ router.post("/refresh-token", refreshAdminToken);
 
 // Protected (admin only)
 router.get("/me", auth, requireRole("admin"), getAdminProfile);
+router.put("/update", auth, requireRole("admin"), updateAdminProfile);
 router.post("/logout", auth, requireRole("admin"), logoutAdmin);
 
 export default router;
+

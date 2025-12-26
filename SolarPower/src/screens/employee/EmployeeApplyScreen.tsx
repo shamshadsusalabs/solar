@@ -1,5 +1,6 @@
 // src/screens/EmployeeApplyScreen.tsx
 import React, { useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   View,
   Text,
@@ -13,21 +14,23 @@ import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import { pick, types } from "@react-native-documents/picker";
 
 
-import { useLeadStore } from "../stores/leadStore";
-import { useEmployeeAuthStore } from "../stores/employeeAuthStore";
+import { useLeadStore } from "../../stores/leadStore";
+import { useEmployeeAuthStore } from "../../stores/employeeAuthStore";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // ✅ 2MB per file
 
 // 👇 Document type keys
 type DocumentKind =
-  | "AADHAAR"
+  | "AADHAAR_FRONT"
+  | "AADHAAR_BACK"
   | "PAN"
   | "ELECTRICITY_BILL"
   | "BANK_STATEMENT"
   | "OTHER";
 
 const KIND_LABELS: Record<DocumentKind, string> = {
-  AADHAAR: "Aadhaar Card",
+  AADHAAR_FRONT: "Aadhaar Front",
+  AADHAAR_BACK: "Aadhaar Back",
   PAN: "PAN Card",
   ELECTRICITY_BILL: "Electricity Bill",
   BANK_STATEMENT: "Bank Statement",
@@ -43,18 +46,19 @@ type LocalDocument = {
 };
 
 const EmployeeApplyScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const employee = useEmployeeAuthStore((s) => s.employee);
   const { createLead, creating, error } = useLeadStore();
 
   const [customerName, setCustomerName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [addressText, setAddressText] = useState("");
-  const [gpsLocation, setGpsLocation] = useState("");
-  const [rtsCapacityKw, setRtsCapacityKw] = useState("");
-  const [roofTopCapacityKw, setRoofTopCapacityKw] = useState("");
-  const [tropositeAmount, setTropositeAmount] = useState("");
-  const [bankName, setBankName] = useState("");
-  const [bankDetails, setBankDetails] = useState("");
+  const [requiredSystemCapacity, setRequiredSystemCapacity] = useState("");
+  const [systemCostQuoted, setSystemCostQuoted] = useState("");
+  const [bankAccountName, setBankAccountName] = useState("");
+  const [ifscCode, setIfscCode] = useState("");
+  const [branchDetails, setBranchDetails] = useState("");
+  const [textInstructions, setTextInstructions] = useState("");
 
   // 📂 Ab har type ka document structured hai
   const [documents, setDocuments] = useState<LocalDocument[]>([]);
@@ -131,7 +135,6 @@ const EmployeeApplyScreen: React.FC = () => {
         name,
       });
     } catch (err) {
-      console.log("pickFromGallery error:", err);
       Alert.alert("Error", "Gallery se file pick nahi ho payi.");
     }
   };
@@ -161,7 +164,6 @@ const EmployeeApplyScreen: React.FC = () => {
         name,
       });
     } catch (err) {
-      console.log("pickFromCamera error:", err);
       Alert.alert("Error", "Camera open nahi ho paya.");
     }
   };
@@ -170,25 +172,25 @@ const EmployeeApplyScreen: React.FC = () => {
   // 📄 PDF / FILE PICKER
   // =======================
   const pickFromFiles = async (kind: DocumentKind) => {
-  try {
-    const [res] = await pick({
-      type: [types.pdf],    // only pdf
-    });
+    try {
+      const [res] = await pick({
+        type: [types.pdf],    // only pdf
+      });
 
-    const size = res.size ?? 0;
-    const name = res.name || "document.pdf";
+      const size = res.size ?? 0;
+      const name = res.name || "document.pdf";
 
-    if (!validateFileSize(size, name)) return;
+      if (!validateFileSize(size, name)) return;
 
-    upsertDocument(kind, {
-      uri: res.uri,
-      type: res.type || "application/pdf",
-      name,
-    });
-  } catch (err) {
-    console.log("File pick cancelled / error", err);
-  }
-};
+      upsertDocument(kind, {
+        uri: res.uri,
+        type: res.type || "application/pdf",
+        name,
+      });
+    } catch (err) {
+      // File picker cancelled or error - silent
+    }
+  };
 
 
   // =======================
@@ -231,12 +233,12 @@ const EmployeeApplyScreen: React.FC = () => {
       customerName,
       contactNumber,
       addressText,
-      gpsLocation,
-      rtsCapacityKw,
-      roofTopCapacityKw,
-      tropositeAmount,
-      bankName,
-      bankDetails,
+      requiredSystemCapacity,
+      systemCostQuoted,
+      bankAccountName,
+      ifscCode,
+      branchDetails,
+      textInstructions,
       documents: docsForApi,
     });
 
@@ -246,12 +248,12 @@ const EmployeeApplyScreen: React.FC = () => {
       setCustomerName("");
       setContactNumber("");
       setAddressText("");
-      setGpsLocation("");
-      setRtsCapacityKw("");
-      setRoofTopCapacityKw("");
-      setTropositeAmount("");
-      setBankName("");
-      setBankDetails("");
+      setRequiredSystemCapacity("");
+      setSystemCostQuoted("");
+      setBankAccountName("");
+      setIfscCode("");
+      setBranchDetails("");
+      setTextInstructions("");
       setDocuments([]);
       setOtherDocLabel("");
     }
@@ -266,7 +268,7 @@ const EmployeeApplyScreen: React.FC = () => {
   return (
     <View className="flex-1 bg-emerald-50">
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        contentContainerStyle={{ paddingTop: insets.top + 12, padding: 16, paddingBottom: 32 }}
         keyboardShouldPersistTaps="handled"
       >
         <Text className="text-xl font-semibold text-emerald-900 mb-1">
@@ -342,65 +344,31 @@ const EmployeeApplyScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* GPS Location */}
+        {/* Required System Capacity */}
         <View className="mb-3">
           <Text className="text-slate-700 mb-1 text-xs font-medium">
-            GPS Location (optional)
+            Required System Capacity (e.g., "20 kw")
           </Text>
           <View className="rounded-2xl border border-emerald-100 bg-white px-3">
             <TextInput
-              value={gpsLocation}
-              onChangeText={setGpsLocation}
-              placeholder="Google Maps link / lat,long"
+              value={requiredSystemCapacity}
+              onChangeText={setRequiredSystemCapacity}
+              placeholder="e.g. 20 kw, 15 KW"
               placeholderTextColor="#9CA3AF"
               className="py-2.5 text-sm text-slate-900"
             />
           </View>
         </View>
 
-        {/* RTS Capacity */}
+        {/* System Cost Quoted */}
         <View className="mb-3">
           <Text className="text-slate-700 mb-1 text-xs font-medium">
-            RTS Capacity (kW)
+            System Cost Quoted (₹)
           </Text>
           <View className="rounded-2xl border border-emerald-100 bg-white px-3">
             <TextInput
-              value={rtsCapacityKw}
-              onChangeText={setRtsCapacityKw}
-              placeholder="e.g. 3"
-              keyboardType="numeric"
-              placeholderTextColor="#9CA3AF"
-              className="py-2.5 text-sm text-slate-900"
-            />
-          </View>
-        </View>
-
-        {/* Roof Top Capacity */}
-        <View className="mb-3">
-          <Text className="text-slate-700 mb-1 text-xs font-medium">
-            Roof Top Capacity (kW)
-          </Text>
-          <View className="rounded-2xl border border-emerald-100 bg-white px-3">
-            <TextInput
-              value={roofTopCapacityKw}
-              onChangeText={setRoofTopCapacityKw}
-              placeholder="e.g. 4"
-              keyboardType="numeric"
-              placeholderTextColor="#9CA3AF"
-              className="py-2.5 text-sm text-slate-900"
-            />
-          </View>
-        </View>
-
-        {/* Troposite Amount */}
-        <View className="mb-3">
-          <Text className="text-slate-700 mb-1 text-xs font-medium">
-            Troposite Amount (₹)
-          </Text>
-          <View className="rounded-2xl border border-emerald-100 bg-white px-3">
-            <TextInput
-              value={tropositeAmount}
-              onChangeText={setTropositeAmount}
+              value={systemCostQuoted}
+              onChangeText={setSystemCostQuoted}
               placeholder="e.g. 120000"
               keyboardType="numeric"
               placeholderTextColor="#9CA3AF"
@@ -409,38 +377,73 @@ const EmployeeApplyScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Bank Name */}
+        {/* Bank Account Name */}
         <View className="mb-3">
           <Text className="text-slate-700 mb-1 text-xs font-medium">
-            Bank Name
+            Bank Account Name
           </Text>
           <View className="rounded-2xl border border-emerald-100 bg-white px-3">
             <TextInput
-              value={bankName}
-              onChangeText={setBankName}
-              placeholder="SBI / HDFC / ICICI..."
+              value={bankAccountName}
+              onChangeText={setBankAccountName}
+              placeholder="Account holder full name"
               placeholderTextColor="#9CA3AF"
               className="py-2.5 text-sm text-slate-900"
             />
           </View>
         </View>
 
-        {/* Bank Details */}
-        <View className="mb-4">
+        {/* IFSC Code */}
+        <View className="mb-3">
           <Text className="text-slate-700 mb-1 text-xs font-medium">
-            Bank Details / Branch
+            IFSC Code
           </Text>
           <View className="rounded-2xl border border-emerald-100 bg-white px-3">
             <TextInput
-              value={bankDetails}
-              onChangeText={setBankDetails}
-              placeholder="Branch, manager, remarks..."
+              value={ifscCode}
+              onChangeText={setIfscCode}
+              placeholder="e.g. SBIN0001234"
               placeholderTextColor="#9CA3AF"
-              multiline
+              autoCapitalize="characters"
               className="py-2.5 text-sm text-slate-900"
             />
           </View>
         </View>
+
+        {/* Branch Details */}
+        <View className="mb-3">
+          <Text className="text-slate-700 mb-1 text-xs font-medium">
+            Branch Details (City/Area)
+          </Text>
+          <View className="rounded-2xl border border-emerald-100 bg-white px-3">
+            <TextInput
+              value={branchDetails}
+              onChangeText={setBranchDetails}
+              placeholder="Branch name, city..."
+              placeholderTextColor="#9CA3AF"
+              className="py-2.5 text-sm text-slate-900"
+            />
+          </View>
+        </View>
+
+        {/* Text Instructions */}
+        <View className="mb-4">
+          <Text className="text-slate-700 mb-1 text-xs font-medium">
+            Instructions / Notes
+          </Text>
+          <View className="rounded-2xl border border-emerald-100 bg-white px-3">
+            <TextInput
+              value={textInstructions}
+              onChangeText={setTextInstructions}
+              placeholder="Any special instructions..."
+              placeholderTextColor="#9CA3AF"
+              multiline
+              numberOfLines={3}
+              className="py-2.5 text-sm text-slate-900"
+            />
+          </View>
+        </View>
+
 
         {/* 📂 Structured Documents */}
         <View className="mb-4">
@@ -448,14 +451,14 @@ const EmployeeApplyScreen: React.FC = () => {
             Documents – Aadhaar / PAN / Bill / Bank Statement (max 2MB each)
           </Text>
 
-          {/* Aadhaar */}
+          {/* Aadhaar Front */}
           <View className="mt-2 mb-2 rounded-2xl bg-white border border-emerald-100 px-3 py-2">
             <Text className="text-[11px] text-slate-700 mb-1 font-semibold">
-              {KIND_LABELS.AADHAAR}
+              {KIND_LABELS.AADHAAR_FRONT}
             </Text>
             <View className="flex-row mb-1">
               <Pressable
-                onPress={() => pickFromGallery("AADHAAR")}
+                onPress={() => pickFromGallery("AADHAAR_FRONT")}
                 className="bg-emerald-50 px-3 py-2 rounded-2xl mr-2 active:opacity-80"
               >
                 <Text className="text-[11px] text-emerald-700 font-semibold">
@@ -463,7 +466,7 @@ const EmployeeApplyScreen: React.FC = () => {
                 </Text>
               </Pressable>
               <Pressable
-                onPress={() => pickFromCamera("AADHAAR")}
+                onPress={() => pickFromCamera("AADHAAR_FRONT")}
                 className="bg-emerald-50 px-3 py-2 rounded-2xl mr-2 active:opacity-80"
               >
                 <Text className="text-[11px] text-emerald-700 font-semibold">
@@ -471,7 +474,7 @@ const EmployeeApplyScreen: React.FC = () => {
                 </Text>
               </Pressable>
               <Pressable
-                onPress={() => pickFromFiles("AADHAAR")}
+                onPress={() => pickFromFiles("AADHAAR_FRONT")}
                 className="bg-emerald-50 px-3 py-2 rounded-2xl active:opacity-80"
               >
                 <Text className="text-[11px] text-emerald-700 font-semibold">
@@ -479,16 +482,65 @@ const EmployeeApplyScreen: React.FC = () => {
                 </Text>
               </Pressable>
             </View>
-            {getDoc("AADHAAR") && (
+            {getDoc("AADHAAR_FRONT") && (
               <View className="flex-row items-center justify-between mt-1">
                 <Text
                   className="text-[11px] text-slate-700 flex-1"
                   numberOfLines={1}
                 >
-                  • {getDoc("AADHAAR")?.name}
+                  • {getDoc("AADHAAR_FRONT")?.name}
                 </Text>
                 <Pressable
-                  onPress={() => removeDocumentByKind("AADHAAR")}
+                  onPress={() => removeDocumentByKind("AADHAAR_FRONT")}
+                  className="ml-2 px-2 py-1 rounded-full bg-red-100"
+                >
+                  <Text className="text-[10px] text-red-600">Remove</Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
+
+          {/* Aadhaar Back */}
+          <View className="mb-2 rounded-2xl bg-white border border-emerald-100 px-3 py-2">
+            <Text className="text-[11px] text-slate-700 mb-1 font-semibold">
+              {KIND_LABELS.AADHAAR_BACK}
+            </Text>
+            <View className="flex-row mb-1">
+              <Pressable
+                onPress={() => pickFromGallery("AADHAAR_BACK")}
+                className="bg-emerald-50 px-3 py-2 rounded-2xl mr-2 active:opacity-80"
+              >
+                <Text className="text-[11px] text-emerald-700 font-semibold">
+                  Gallery
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => pickFromCamera("AADHAAR_BACK")}
+                className="bg-emerald-50 px-3 py-2 rounded-2xl mr-2 active:opacity-80"
+              >
+                <Text className="text-[11px] text-emerald-700 font-semibold">
+                  Camera
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => pickFromFiles("AADHAAR_BACK")}
+                className="bg-emerald-50 px-3 py-2 rounded-2xl active:opacity-80"
+              >
+                <Text className="text-[11px] text-emerald-700 font-semibold">
+                  PDF / File
+                </Text>
+              </Pressable>
+            </View>
+            {getDoc("AADHAAR_BACK") && (
+              <View className="flex-row items-center justify-between mt-1">
+                <Text
+                  className="text-[11px] text-slate-700 flex-1"
+                  numberOfLines={1}
+                >
+                  • {getDoc("AADHAAR_BACK")?.name}
+                </Text>
+                <Pressable
+                  onPress={() => removeDocumentByKind("AADHAAR_BACK")}
                   className="ml-2 px-2 py-1 rounded-full bg-red-100"
                 >
                   <Text className="text-[10px] text-red-600">Remove</Text>
@@ -716,9 +768,8 @@ const EmployeeApplyScreen: React.FC = () => {
         <Pressable
           onPress={onSubmit}
           disabled={creating}
-          className={`rounded-2xl py-3.5 items-center active:opacity-85 shadow-md shadow-emerald-300 ${
-            creating ? "bg-emerald-300" : "bg-emerald-500"
-          }`}
+          className={`rounded-2xl py-3.5 items-center active:opacity-85 shadow-md shadow-emerald-300 ${creating ? "bg-emerald-300" : "bg-emerald-500"
+            }`}
         >
           {creating ? (
             <ActivityIndicator color="#ffffff" />

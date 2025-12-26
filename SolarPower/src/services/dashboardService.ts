@@ -2,31 +2,42 @@
 import { apiFetch } from "./api";
 
 export interface DashboardCardStats {
-  totalInstallations: number;
-  activeEmployees: number;
-  totalFormsSubmitted: number;
+  totalEmployees: number;
+  totalManagers: number;
+  totalChiefs: number;
+  totalGodownIncharges: number;
+  totalLeads: number;
+  activeLeads: number;
+  completedLeads: number;
 }
 
-export interface DashboardDailyInstall {
-  date: string; // "2025-12-07"
-  day: string;  // "Sun"
+export interface LeadStatusCount {
+  status: string;
   count: number;
 }
 
-export interface DashboardEmployeeStat {
+export interface RecentLead {
+  _id: string;
+  customerName: string;
+  salesManName: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface TopEmployee {
   employeeId: string;
   employeeCode: string;
   name: string;
-  forms: number;
-  createdAt?: string;
+  leadCount: number;
 }
 
 export interface AdminDashboardResponse {
   success: boolean;
   data: {
     cards: DashboardCardStats;
-    dailyInstalls: DashboardDailyInstall[];
-    employees: DashboardEmployeeStat[];
+    statusBreakdown: LeadStatusCount[];
+    recentLeads: RecentLead[];
+    topEmployees: TopEmployee[];
   };
 }
 

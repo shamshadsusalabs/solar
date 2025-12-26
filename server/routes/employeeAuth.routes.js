@@ -4,11 +4,16 @@ import {
   loginEmployee,
   getEmployeeProfile,
   logoutEmployee,
-  refreshEmployeeToken, uploadEmployeeAadhaar,
-  getEmployeeAadhaarStatus, getAllEmployeesForAdmin
+  refreshEmployeeToken,
+  uploadEmployeeAadhaar,
+  getEmployeeAadhaarStatus,
+  getAllEmployeesForAdmin,
+  updateEmployee,
+  deleteEmployee,
+  verifyEmployeeAadhaar, // ✅ Admin Aadhaar verification
 } from "../controllers/employeeAuth.controller.js";
 import { auth, requireRole } from "../middleware/auth.middleware.js";
-import multer from "multer";
+import { upload } from "../middleware/upload.js"; // ✅ Use central upload middleware
 const router = Router();
 
 // Public
@@ -20,18 +25,17 @@ router.post("/refresh-token", refreshEmployeeToken);
 router.get("/me", auth, requireRole("employee"), getEmployeeProfile);
 router.post("/logout", auth, requireRole("employee"), logoutEmployee);
 
-// Simple disk storage
-const upload = multer({
-  dest: "uploads/", // temp folder
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5 MB
-  },
-});
-
-// Aadhaar upload route
+// Aadhaar upload route with debug logging
 router.patch(
   "/aadhaar",
-  auth, requireRole("employee"),
+  (req, res, next) => {
+    console.log("🟢 /aadhaar route hit!");
+    console.log("  Headers:", req.headers["content-type"]);
+    console.log("  Auth:", req.headers["authorization"] ? "Present" : "Missing");
+    next();
+  },
+  auth,
+  requireRole("employee"),
   upload.single("aadhaarFile"), // 👈 field name from frontend
   uploadEmployeeAadhaar
 );
@@ -44,6 +48,20 @@ router.get(
 );
 
 router.get("/employees", auth, requireRole("admin"), getAllEmployeesForAdmin);
+
+// Update employee (admin only)
+router.patch("/:employeeId", auth, requireRole("admin"), updateEmployee);
+
+// Delete employee (admin only)
+router.delete("/:employeeId", auth, requireRole("admin"), deleteEmployee);
+
+// ✅ Admin: Verify (approve/reject) employee Aadhaar
+router.patch(
+  "/aadhaar/verify/:employeeId",
+  auth,
+  requireRole("admin"),
+  verifyEmployeeAadhaar
+);
 
 export default router;
 

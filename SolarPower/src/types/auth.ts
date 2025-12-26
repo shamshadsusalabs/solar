@@ -1,6 +1,6 @@
 // src/types/auth.ts
 
-export type UserRole = "admin" | "employee";
+export type UserRole = "admin" | "employee" | "manager" | "chief" | "godown_incharge";
 
 export type Admin = {
   id: string;

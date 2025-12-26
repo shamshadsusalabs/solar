@@ -23,8 +23,7 @@ const AdminLoginForm: React.FC = () => {
       return setLocalError("Please enter email & password.");
     }
 
-    const success = await loginAdmin(email.trim(), password);
-    console.log("Admin login success:", success);
+    await loginAdmin(email.trim(), password);
     // App.tsx role se redirect kar raha hai already
   };
 
@@ -83,9 +82,8 @@ const AdminLoginForm: React.FC = () => {
       <Pressable
         onPress={onLogin}
         disabled={loading}
-        className={`rounded-2xl py-3.5 items-center active:opacity-85 shadow-md shadow-emerald-300 ${
-          loading ? "bg-emerald-300" : "bg-emerald-500"
-        }`}
+        className={`rounded-2xl py-3.5 items-center active:opacity-85 shadow-md shadow-emerald-300 ${loading ? "bg-emerald-300" : "bg-emerald-500"
+          }`}
       >
         {loading ? (
           <ActivityIndicator color="#ffffff" />

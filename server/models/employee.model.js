@@ -48,7 +48,14 @@ const employeeSchema = new mongoose.Schema(
       default: null,
     },
 
-     isFilled: {
+    // ✅ Aadhaar verification status by admin
+    aadhaarVerified: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+
+    isFilled: {
       type: Boolean,
       default: false,
       index: true,

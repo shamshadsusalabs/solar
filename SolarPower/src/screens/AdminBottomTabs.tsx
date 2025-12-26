@@ -1,56 +1,95 @@
 // src/components/AdminBottomTabs.tsx
 import React from "react";
-import { View, Text, Pressable } from "react-native";
-import { Home, Users, UserCircle, ClipboardCheck } from "lucide-react-native";
+import { View, Text, Pressable, ScrollView } from "react-native";
+import { Home, Users, UserCircle, ClipboardCheck, Building2, Store, Warehouse } from "lucide-react-native";
 
 type AdminBottomTabsProps = {
   onDashboardPress?: () => void;
   onEmployeesPress?: () => void;
-  onApprovalsPress?: () => void;   // 👈 NEW
+  onManagersPress?: () => void;
+  onChiefsPress?: () => void;
+  onGodownInchargesPress?: () => void;
+  onApprovalsPress?: () => void;
   onAccountPress?: () => void;
 };
 
-const ICON_SIZE = 22;
+// Smaller icon size for 7 tabs
+const ICON_SIZE = 18;
 
 const AdminBottomTabs: React.FC<AdminBottomTabsProps> = ({
   onDashboardPress,
   onEmployeesPress,
+  onManagersPress,
+  onChiefsPress,
+  onGodownInchargesPress,
   onApprovalsPress,
   onAccountPress,
 }) => {
   return (
-    <View className="flex-row justify-between pb-2 pt-3 px-4 bg-white border-t border-emerald-100 shadow-md">
-      {/* Dashboard */}
-      <Pressable onPress={onDashboardPress} className="flex-1 items-center">
-        <Home size={ICON_SIZE} color="#059669" />
-        <Text className="mt-1 text-[11px] font-medium text-emerald-700">
-          Dashboard
-        </Text>
-      </Pressable>
+    <View className="bg-white border-t border-emerald-100 shadow-md">
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 8, paddingVertical: 8 }}
+      >
+        <View className="flex-row gap-x-1">
+          {/* Dashboard */}
+          <Pressable onPress={onDashboardPress} className="items-center px-2.5 py-1">
+            <Home size={ICON_SIZE} color="#059669" />
+            <Text className="mt-0.5 text-[9px] font-medium text-emerald-700">
+              Home
+            </Text>
+          </Pressable>
 
-      {/* Employees */}
-      <Pressable onPress={onEmployeesPress} className="flex-1 items-center">
-        <Users size={ICON_SIZE} color="#059669" />
-        <Text className="mt-1 text-[11px] font-medium text-emerald-700">
-          Employees
-        </Text>
-      </Pressable>
+          {/* Employees */}
+          <Pressable onPress={onEmployeesPress} className="items-center px-2.5 py-1">
+            <Users size={ICON_SIZE} color="#059669" />
+            <Text className="mt-0.5 text-[9px] font-medium text-emerald-700">
+              Employees
+            </Text>
+          </Pressable>
 
-      {/* Approvals – NEW TAB */}
-      <Pressable onPress={onApprovalsPress} className="flex-1 items-center">
-        <ClipboardCheck size={ICON_SIZE} color="#059669" />
-        <Text className="mt-1 text-[11px] font-medium text-emerald-700">
-          Approvals
-        </Text>
-      </Pressable>
+          {/* Managers */}
+          <Pressable onPress={onManagersPress} className="items-center px-2.5 py-1">
+            <Building2 size={ICON_SIZE} color="#059669" />
+            <Text className="mt-0.5 text-[9px] font-medium text-emerald-700">
+              Managers
+            </Text>
+          </Pressable>
 
-      {/* Admin Account */}
-      <Pressable onPress={onAccountPress} className="flex-1 items-center">
-        <UserCircle size={ICON_SIZE} color="#059669" />
-        <Text className="mt-1 text-[11px] font-medium text-emerald-700">
-          Account
-        </Text>
-      </Pressable>
+          {/* Chiefs */}
+          <Pressable onPress={onChiefsPress} className="items-center px-2.5 py-1">
+            <Store size={ICON_SIZE} color="#059669" />
+            <Text className="mt-0.5 text-[9px] font-medium text-emerald-700">
+              Chiefs
+            </Text>
+          </Pressable>
+
+          {/* Godown Incharges */}
+          <Pressable onPress={onGodownInchargesPress} className="items-center px-2.5 py-1">
+            <Warehouse size={ICON_SIZE} color="#059669" />
+            <Text className="mt-0.5 text-[9px] font-medium text-emerald-700">
+              Godown
+            </Text>
+          </Pressable>
+
+          {/* Approvals */}
+          <Pressable onPress={onApprovalsPress} className="items-center px-2.5 py-1">
+            <ClipboardCheck size={ICON_SIZE} color="#059669" />
+            <Text className="mt-0.5 text-[9px] font-medium text-emerald-700">
+              Approvals
+            </Text>
+          </Pressable>
+
+          {/* Admin Account */}
+          <Pressable onPress={onAccountPress} className="items-center px-2.5 py-1">
+            <UserCircle size={ICON_SIZE} color="#059669" />
+            <Text className="mt-0.5 text-[9px] font-medium text-emerald-700">
+              Account
+            </Text>
+          </Pressable>
+        </View>
+      </ScrollView>
     </View>
   );
 };

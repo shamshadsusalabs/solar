@@ -121,6 +121,67 @@ export const getAdminProfile = async (req, res) => {
 };
 
 /**
+ * ✅ PUT /api/admin/auth/update
+ *  - Admin apna profile update kar sakta hai (email, phoneNumber, password)
+ */
+export const updateAdminProfile = async (req, res) => {
+  try {
+    const adminId = req.user.id; // auth middleware se
+
+    const { email, phoneNumber, password } = req.body;
+
+    // At least one field hona chahiye
+    if (!email && !phoneNumber && !password) {
+      return res.status(400).json({
+        message: "At least one field (email, phoneNumber, password) is required"
+      });
+    }
+
+    const admin = await Admin.findById(adminId);
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    // Check if email or phone already exists (agar change kar rahe hain)
+    if (email && email !== admin.email) {
+      const existing = await Admin.findOne({ email });
+      if (existing) {
+        return res.status(409).json({ message: "Email already in use" });
+      }
+      admin.email = email;
+    }
+
+    if (phoneNumber && phoneNumber !== admin.phoneNumber) {
+      const existing = await Admin.findOne({ phoneNumber });
+      if (existing) {
+        return res.status(409).json({ message: "Phone number already in use" });
+      }
+      admin.phoneNumber = phoneNumber;
+    }
+
+    // Password update (mongoose pre-save hook se hash ho jayega)
+    if (password) {
+      admin.password = password;
+    }
+
+    await admin.save();
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      admin: {
+        id: admin._id,
+        email: admin.email,
+        phoneNumber: admin.phoneNumber,
+        role: admin.role,
+      },
+    });
+  } catch (err) {
+    console.error("updateAdminProfile error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/**
  * ✅ POST /api/admin/auth/logout
  *  - Refresh token ko DB se clear karega
  */

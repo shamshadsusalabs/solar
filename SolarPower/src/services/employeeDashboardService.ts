@@ -5,7 +5,7 @@ export interface EmployeeDashboardTotals {
   totalLeads: number;
   activeLeads: number;
   closedLeads: number;
-  totalTropositeAmount: number;
+  totalSystemCostQuoted: number;
   totalDocuments: number;
 }
 
@@ -20,7 +20,7 @@ export interface EmployeeRecentLead {
   contactNumber: string;
   addressText: string;
   status: string;
-  tropositeAmount?: number;
+  systemCostQuoted?: number;
   createdAt: string;
 }
 

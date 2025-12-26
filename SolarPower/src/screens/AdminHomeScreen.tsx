@@ -1,65 +1,66 @@
 // src/screens/AdminHomeScreen.tsx
-import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator } from "react-native";
-import { SunMedium, Users, FileText, TrendingUp } from "lucide-react-native";
+import React, { useEffect } from "react";
+import { View, Text, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  Users,
+  Building2,
+  Store,
+  Warehouse,
+  FileText,
+  TrendingUp,
+  CheckCircle2,
+  Clock,
+} from "lucide-react-native";
 
-import { getAdminDashboardService } from "../services/dashboardService";
 import { useAdminAuthStore } from "../stores/adminAuthStore";
-import type {
-  DashboardCardStats,
-  DashboardDailyInstall,
-  DashboardEmployeeStat,
-} from "../services/dashboardService";
+import { useDashboardStore } from "../stores/dashboardStore";
 
 const AdminHomeScreen: React.FC = () => {
-  const [cards, setCards] = useState<DashboardCardStats | null>(null);
-  const [dailyInstalls, setDailyInstalls] = useState<DashboardDailyInstall[]>(
-    []
-  );
-  const [employeeStats, setEmployeeStats] = useState<DashboardEmployeeStat[]>(
-    []
-  );
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
+  const insets = useSafeAreaInsets();
   const adminTokens = useAdminAuthStore((s) => s.tokens);
 
-  const fetchDashboard = async () => {
-    if (!adminTokens?.accessToken) {
-      setError("Admin not logged in");
-      return;
-    }
+  // Dashboard data from store (with caching)
+  const {
+    cards,
+    statusBreakdown,
+    recentLeads,
+    topEmployees,
+    loading,
+    error,
+    initDashboardFromStorage,
+    fetchDashboard,
+  } = useDashboardStore();
 
-    try {
-      setLoading(true);
-      setError(null);
-
-      const res = await getAdminDashboardService(adminTokens.accessToken);
-
-      setCards(res.data.cards);
-      setDailyInstalls(res.data.dailyInstalls);
-      setEmployeeStats(res.data.employees);
-    } catch (err: any) {
-      console.log("fetchDashboard error:", err);
-      setError(err?.message || "Failed to load dashboard");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Init from storage and fetch fresh data
   useEffect(() => {
-    fetchDashboard();
+    initDashboardFromStorage(); // Load cached data immediately
   }, []);
 
-  // agar cards null hai to default 0 show karenge
-  const totalInstallations = cards?.totalInstallations ?? 0;
-  const activeEmployees = cards?.activeEmployees ?? 0;
-  const totalFormsSubmitted = cards?.totalFormsSubmitted ?? 0;
+  useEffect(() => {
+    if (adminTokens?.accessToken) {
+      fetchDashboard(adminTokens.accessToken); // Fetch fresh data
+    }
+  }, [adminTokens?.accessToken]);
+
+  const formatStatus = (status: string) =>
+    status
+      .replaceAll("_", " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+    });
+  };
 
   return (
     <ScrollView
-      className="flex-1 px-6 pt-6 bg-emerald-50"
-      contentContainerStyle={{ paddingBottom: 16 }}
+      className="flex-1 px-6 bg-emerald-50"
+      contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 16 }}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
@@ -68,7 +69,7 @@ const AdminHomeScreen: React.FC = () => {
           Admin Dashboard
         </Text>
         <Text className="text-slate-500 mt-1 text-sm">
-          Live overview of solar installations, employees & forms.
+          Live overview of team, leads & system activity.
         </Text>
       </View>
 
@@ -79,163 +80,267 @@ const AdminHomeScreen: React.FC = () => {
         </View>
       )}
 
-      {/* Loading state */}
-      {loading && !cards && (
-        <View className="mt-8 items-center">
-          <ActivityIndicator size="small" color="#059669" />
-          <Text className="mt-2 text-[12px] text-slate-500">
-            Loading dashboard...
-          </Text>
-        </View>
-      )}
-
-      {/* Top stats cards */}
-      <View className="flex-row flex-wrap -mx-1 mb-4">
-        {/* Total Installations */}
-        <View className="w-1/2 px-1 mb-3">
-          <View className="bg-white rounded-2xl p-3.5 shadow-sm border border-emerald-50">
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-[11px] text-slate-500 font-medium">
-                Total Installations
-              </Text>
-              <View className="h-7 w-7 rounded-full bg-emerald-50 items-center justify-center">
-                <SunMedium size={16} color="#059669" />
-              </View>
-            </View>
-            <Text className="text-xl font-semibold text-emerald-900">
-              {totalInstallations}
-            </Text>
-            <Text className="text-[11px] text-slate-400 mt-1">
-              Completed this year
-            </Text>
-          </View>
-        </View>
-
-        {/* Active Employees */}
-        <View className="w-1/2 px-1 mb-3">
-          <View className="bg-white rounded-2xl p-3.5 shadow-sm border border-emerald-50">
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-[11px] text-slate-500 font-medium">
-                Active Employees
-              </Text>
-              <View className="h-7 w-7 rounded-full bg-emerald-50 items-center justify-center">
-                <Users size={16} color="#059669" />
-              </View>
-            </View>
-            <Text className="text-xl font-semibold text-emerald-900">
-              {activeEmployees}
-            </Text>
-            <Text className="text-[11px] text-slate-400 mt-1">
-              On-site & field
-            </Text>
-          </View>
-        </View>
-
-        {/* Forms Submitted */}
-        <View className="w-1/2 px-1 mb-3">
-          <View className="bg-white rounded-2xl p-3.5 shadow-sm border border-emerald-50">
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-[11px] text-slate-500 font-medium">
-                Forms Submitted
-              </Text>
-              <View className="h-7 w-7 rounded-full bg-emerald-50 items-center justify-center">
-                <FileText size={16} color="#059669" />
-              </View>
-            </View>
-            <Text className="text-xl font-semibold text-emerald-900">
-              {totalFormsSubmitted}
-            </Text>
-            <Text className="text-[11px] text-slate-400 mt-1">
-              Site survey & reports
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Mini graph card */}
-      <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-emerald-50">
-        <View className="flex-row items-center justify-between mb-2">
-          <View>
-            <Text className="text-sm font-semibold text-emerald-900">
-              Weekly Installations
-            </Text>
-            <Text className="text-[11px] text-slate-400">
-              Number of sites installed per day
-            </Text>
-          </View>
-          <View className="flex-row items-center">
-            <TrendingUp size={18} color="#059669" />
-            {/* abhi ke liye static text, baad me % change bhi API se nikal sakte ho */}
-            <Text className="ml-1 text-[11px] text-emerald-600 font-medium">
-              Last 7 days
-            </Text>
-          </View>
-        </View>
-
-        {/* Simple bar chart */}
-        <View className="h-36 flex-row items-end justify-between mt-2">
-          {dailyInstalls.length === 0 ? (
-            <View className="flex-1 items-center justify-center">
-              <Text className="text-[11px] text-slate-400">
-                No installations in last 7 days
-              </Text>
-            </View>
-          ) : (
-            dailyInstalls.map((d) => (
-              <View key={d.date} className="items-center flex-1">
-                <View
-                  className="w-4 rounded-full bg-emerald-400/80"
-                  style={{
-                    height: 10 + d.count * 10,
-                  }}
-                />
-                <Text className="text-[10px] text-slate-500 mt-1">
-                  {d.day}
+      {/* User Type Stats - 4 cards */}
+      <View className="mb-3">
+        <Text className="text-xs font-semibold text-slate-600 mb-2 ml-1">
+          Team Overview
+        </Text>
+        <View className="flex-row flex-wrap -mx-1">
+          <View className="w-1/2 px-1 mb-2">
+            <View className="bg-white rounded-xl p-3 shadow-sm border border-emerald-50">
+              <View className="flex-row items-center justify-between mb-1">
+                <Text className="text-[10px] text-slate-500 font-medium">
+                  Employees
                 </Text>
+                <View className="h-6 w-6 rounded-full bg-blue-50 items-center justify-center">
+                  <Users size={13} color="#3B82F6" />
+                </View>
               </View>
-            ))
-          )}
+              {loading && !cards ? (
+                <View className="h-7 w-16 bg-slate-100 rounded-md" />
+              ) : (
+                <Text className="text-lg font-bold text-slate-900">
+                  {cards?.totalEmployees ?? 0}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          <View className="w-1/2 px-1 mb-2">
+            <View className="bg-white rounded-xl p-3 shadow-sm border border-emerald-50">
+              <View className="flex-row items-center justify-between mb-1">
+                <Text className="text-[10px] text-slate-500 font-medium">
+                  Managers
+                </Text>
+                <View className="h-6 w-6 rounded-full bg-emerald-50 items-center justify-center">
+                  <Building2 size={13} color="#059669" />
+                </View>
+              </View>
+              {loading && !cards ? (
+                <View className="h-7 w-16 bg-slate-100 rounded-md" />
+              ) : (
+                <Text className="text-lg font-bold text-slate-900">
+                  {cards?.totalManagers ?? 0}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          <View className="w-1/2 px-1 mb-2">
+            <View className="bg-white rounded-xl p-3 shadow-sm border border-emerald-50">
+              <View className="flex-row items-center justify-between mb-1">
+                <Text className="text-[10px] text-slate-500 font-medium">
+                  Chiefs
+                </Text>
+                <View className="h-6 w-6 rounded-full bg-purple-50 items-center justify-center">
+                  <Store size={13} color="#9333EA" />
+                </View>
+              </View>
+              {loading && !cards ? (
+                <View className="h-7 w-16 bg-slate-100 rounded-md" />
+              ) : (
+                <Text className="text-lg font-bold text-slate-900">
+                  {cards?.totalChiefs ?? 0}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          <View className="w-1/2 px-1 mb-2">
+            <View className="bg-white rounded-xl p-3 shadow-sm border border-emerald-50">
+              <View className="flex-row items-center justify-between mb-1">
+                <Text className="text-[10px] text-slate-500 font-medium">
+                  Godown
+                </Text>
+                <View className="h-6 w-6 rounded-full bg-orange-50 items-center justify-center">
+                  <Warehouse size={13} color="#EA580C" />
+                </View>
+              </View>
+              {loading && !cards ? (
+                <View className="h-7 w-16 bg-slate-100 rounded-md" />
+              ) : (
+                <Text className="text-lg font-bold text-slate-900">
+                  {cards?.totalGodownIncharges ?? 0}
+                </Text>
+              )}
+            </View>
+          </View>
         </View>
       </View>
 
-      {/* Employee stats / list */}
-      <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-emerald-50">
+      {/* Lead Summary - 3 cards */}
+      <View className="mb-3">
+        <Text className="text-xs font-semibold text-slate-600 mb-2 ml-1">
+          Lead Summary
+        </Text>
+        <View className="flex-row flex-wrap -mx-1">
+          <View className="w-1/3 px-1 mb-2">
+            <View className="bg-white rounded-xl p-2.5 shadow-sm border border-emerald-50 items-center">
+              <FileText size={16} color="#059669" />
+              {loading && !cards ? (
+                <View className="h-6 w-12 bg-slate-100 rounded-md mt-1" />
+              ) : (
+                <Text className="text-base font-bold text-slate-900 mt-1">
+                  {cards?.totalLeads ?? 0}
+                </Text>
+              )}
+              <Text className="text-[9px] text-slate-500 text-center">
+                Total
+              </Text>
+            </View>
+          </View>
+
+          <View className="w-1/3 px-1 mb-2">
+            <View className="bg-white rounded-xl p-2.5 shadow-sm border border-emerald-50 items-center">
+              <Clock size={16} color="#F59E0B" />
+              {loading && !cards ? (
+                <View className="h-6 w-12 bg-slate-100 rounded-md mt-1" />
+              ) : (
+                <Text className="text-base font-bold text-slate-900 mt-1">
+                  {cards?.activeLeads ?? 0}
+                </Text>
+              )}
+              <Text className="text-[9px] text-slate-500 text-center">
+                Active
+              </Text>
+            </View>
+          </View>
+
+          <View className="w-1/3 px-1 mb-2">
+            <View className="bg-white rounded-xl p-2.5 shadow-sm border border-emerald-50 items-center">
+              <CheckCircle2 size={16} color="#10B981" />
+              {loading && !cards ? (
+                <View className="h-6 w-12 bg-slate-100 rounded-md mt-1" />
+              ) : (
+                <Text className="text-base font-bold text-slate-900 mt-1">
+                  {cards?.completedLeads ?? 0}
+                </Text>
+              )}
+              <Text className="text-[9px] text-slate-500 text-center">
+                Paid
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Lead Status Breakdown */}
+      <View className="bg-white rounded-2xl p-4 mb-3 shadow-sm border border-emerald-50">
         <View className="flex-row items-center justify-between mb-3">
           <Text className="text-sm font-semibold text-emerald-900">
-            Employee Form Activity
+            Lead Status Breakdown
           </Text>
-          <Text className="text-[11px] text-emerald-600 font-medium">
-            Top performers
+          <TrendingUp size={16} color="#059669" />
+        </View>
+
+        {statusBreakdown.length === 0 ? (
+          <Text className="text-[11px] text-slate-400">No leads yet.</Text>
+        ) : (
+          statusBreakdown.map((item, idx) => (
+            <View
+              key={item.status}
+              className={`flex-row items-center justify-between py-2 ${idx !== statusBreakdown.length - 1
+                ? "border-b border-emerald-50"
+                : ""
+                }`}
+            >
+              <Text className="text-[11px] text-slate-700 flex-1">
+                {formatStatus(item.status)}
+              </Text>
+              <View className="flex-row items-center">
+                <View className="h-5 px-2 rounded-full bg-emerald-50 items-center justify-center">
+                  <Text className="text-[10px] font-semibold text-emerald-700">
+                    {item.count}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          ))
+        )}
+      </View>
+
+      {/* Top Employees */}
+      <View className="bg-white rounded-2xl p-4 mb-3 shadow-sm border border-emerald-50">
+        <View className="flex-row items-center justify-between mb-3">
+          <Text className="text-sm font-semibold text-emerald-900">
+            Top Performers
+          </Text>
+          <Text className="text-[10px] text-emerald-600 font-medium">
+            By Lead Count
           </Text>
         </View>
 
-        {employeeStats.length === 0 ? (
+        {topEmployees.length === 0 ? (
           <Text className="text-[11px] text-slate-400">
             No employee activity yet.
           </Text>
         ) : (
-          employeeStats.map((emp, index) => (
+          topEmployees.map((emp, idx) => (
             <View
               key={emp.employeeId}
-              className={`flex-row items-center justify-between py-2 ${
-                index !== employeeStats.length - 1
-                  ? "border-b border-emerald-50"
-                  : ""
-              }`}
+              className={`flex-row items-center justify-between py-2 ${idx !== topEmployees.length - 1
+                ? "border-b border-emerald-50"
+                : ""
+                }`}
             >
               <View className="flex-1">
                 <Text className="text-[12px] font-semibold text-slate-800">
                   {emp.name}
                 </Text>
-                <Text className="text-[11px] text-slate-400">
+                <Text className="text-[10px] text-slate-400">
                   {emp.employeeCode}
                 </Text>
               </View>
+              <Text className="text-[11px] font-semibold text-emerald-700">
+                {emp.leadCount} leads
+              </Text>
+            </View>
+          ))
+        )}
+      </View>
 
-              <View className="items-end">
-                <Text className="text-[12px] font-semibold text-emerald-700">
-                  {emp.forms} forms
+      {/* Recent Leads */}
+      <View className="bg-white rounded-2xl p-4 mb-3 shadow-sm border border-emerald-50">
+        <View className="flex-row items-center justify-between mb-3">
+          <Text className="text-sm font-semibold text-emerald-900">
+            Recent Activity
+          </Text>
+          <Text className="text-[10px] text-emerald-600 font-medium">
+            Last 10 Leads
+          </Text>
+        </View>
+
+        {recentLeads.length === 0 ? (
+          <Text className="text-[11px] text-slate-400">No recent leads.</Text>
+        ) : (
+          recentLeads.map((lead, idx) => (
+            <View
+              key={lead._id}
+              className={`py-2 ${idx !== recentLeads.length - 1
+                ? "border-b border-emerald-50"
+                : ""
+                }`}
+            >
+              <View className="flex-row items-start justify-between mb-1">
+                <Text
+                  className="text-[12px] font-semibold text-slate-800 flex-1"
+                  numberOfLines={1}
+                >
+                  {lead.customerName}
                 </Text>
+                <Text className="text-[10px] text-slate-400 ml-2">
+                  {formatDate(lead.createdAt)}
+                </Text>
+              </View>
+              <View className="flex-row items-center justify-between">
+                <Text className="text-[10px] text-slate-500">
+                  By {lead.salesManName}
+                </Text>
+                <View className="px-2 py-0.5 rounded-full bg-emerald-50">
+                  <Text className="text-[9px] text-emerald-700 font-medium">
+                    {formatStatus(lead.status)}
+                  </Text>
+                </View>
               </View>
             </View>
           ))

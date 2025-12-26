@@ -71,6 +71,7 @@ export interface EmployeeProfileResponse {
     isVerified?: boolean;
     aadhaarNumber?: string | null;
     aadhaarUrl?: string | null;
+    aadhaarVerified?: "pending" | "approved" | "rejected";
     createdAt?: string;
   };
 }
@@ -135,7 +136,7 @@ export const uploadEmployeeAadhaarService = async (
   accessToken: string
 ) => {
   const data = await apiFetch<UploadEmployeeAadhaarResponse>(
-    "/api/employee/aadhaar",
+    "/api/employee/auth/aadhaar", // ✅ Fixed: added /auth
     {
       method: "PATCH",
       token: accessToken,
@@ -159,7 +160,7 @@ export const getEmployeeAadhaarStatusService = async (
   accessToken: string
 ) => {
   const data = await apiFetch<EmployeeAadhaarStatusResponse>(
-    "/api/employee/aadhaar/status",
+    "/api/employee/auth/aadhaar/status", // ✅ Fixed: added /auth
     {
       method: "GET",
       token: accessToken,
@@ -176,6 +177,7 @@ export interface AdminEmployee {
   phoneNumber: string;
   aadhaarNumber: string | null;
   aadhaarUrl: string | null;
+  aadhaarVerified: "pending" | "approved" | "rejected";
   isFilled: boolean;
   role: "employee";
   createdAt: string;
@@ -218,6 +220,98 @@ export const getAllEmployeesForAdminService = async (
     method: "GET",
     token: accessToken,
   });
+
+  return data;
+};
+
+// 🔄 Update employee (admin only)
+interface UpdateEmployeeBody {
+  name?: string;
+  phoneNumber?: string;
+  password?: string;
+}
+
+interface UpdateEmployeeResponse {
+  message: string;
+  employee: {
+    id: string;
+    employeeCode: string;
+    name: string;
+    phoneNumber: string;
+    role: "employee";
+    isFilled: boolean;
+  };
+}
+
+export const updateEmployeeService = async (
+  employeeId: string,
+  body: UpdateEmployeeBody,
+  adminAccessToken: string
+) => {
+  const data = await apiFetch<UpdateEmployeeResponse>(
+    `/api/employee/auth/${employeeId}`,
+    {
+      method: "PATCH",
+      body,
+      token: adminAccessToken,
+    }
+  );
+
+  return data;
+};
+
+// 🗑️ Delete employee (admin only)
+interface DeleteEmployeeResponse {
+  message: string;
+  deletedEmployee: {
+    id: string;
+    employeeCode: string;
+    name: string;
+  };
+}
+
+export const deleteEmployeeService = async (
+  employeeId: string,
+  adminAccessToken: string
+) => {
+  const data = await apiFetch<DeleteEmployeeResponse>(
+    `/api/employee/auth/${employeeId}`,
+    {
+      method: "DELETE",
+      token: adminAccessToken,
+    }
+  );
+
+  return data;
+};
+
+// ✅ Verify (approve/reject) employee Aadhaar (admin only)
+interface VerifyAadhaarResponse {
+  message: string;
+  employee: {
+    _id: string;
+    employeeCode: string;
+    name: string;
+    aadhaarNumber: string | null;
+    aadhaarUrl: string | null;
+    aadhaarVerified: "pending" | "approved" | "rejected";
+    isFilled: boolean;
+  };
+}
+
+export const verifyEmployeeAadhaarService = async (
+  employeeId: string,
+  status: "approved" | "rejected",
+  adminAccessToken: string
+) => {
+  const data = await apiFetch<VerifyAadhaarResponse>(
+    `/api/employee/auth/aadhaar/verify/${employeeId}`,
+    {
+      method: "PATCH",
+      body: { status },
+      token: adminAccessToken,
+    }
+  );
 
   return data;
 };

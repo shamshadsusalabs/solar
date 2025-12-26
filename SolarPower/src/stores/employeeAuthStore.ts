@@ -97,7 +97,7 @@ const saveEmployeeAuthToStorage = async (state: {
       JSON.stringify(state)
     );
   } catch (err) {
-    console.log("saveEmployeeAuthToStorage error:", err);
+    // Silent error - storage write failed
   }
 };
 
@@ -105,7 +105,7 @@ const clearEmployeeAuthStorage = async () => {
   try {
     await AsyncStorage.removeItem(EMPLOYEE_AUTH_STORAGE_KEY);
   } catch (err) {
-    console.log("clearEmployeeAuthStorage error:", err);
+    // Silent error - storage clear failed
   }
 };
 
@@ -154,7 +154,7 @@ export const useEmployeeAuthStore = create<EmployeeAuthState>((set, get) => ({
         tokens: parsed.tokens ?? null,
       });
     } catch (err) {
-      console.log("initEmployeeAuthFromStorage error:", err);
+      // Silent error - failed to load auth from storage
     }
   },
 
@@ -218,7 +218,8 @@ export const useEmployeeAuthStore = create<EmployeeAuthState>((set, get) => ({
 
       return true;
     } catch (err) {
-      console.log("refreshEmployeeTokens error:", err);
+      // Token refresh failed - silently logout
+      await get().logoutEmployee();
       return false;
     }
   },
@@ -234,7 +235,7 @@ export const useEmployeeAuthStore = create<EmployeeAuthState>((set, get) => ({
       if (accessToken) {
         await logoutEmployeeService(accessToken);
       }
-    } catch {}
+    } catch { }
 
     await clearEmployeeAuthStorage();
 
@@ -389,8 +390,6 @@ export const useEmployeeAuthStore = create<EmployeeAuthState>((set, get) => ({
         adminLoading: false,
       });
     } catch (err: any) {
-      console.log("fetchAllEmployeesForAdmin error:", err);
-
       set({
         adminLoading: false,
         adminError: err?.message || "Failed to load employees",

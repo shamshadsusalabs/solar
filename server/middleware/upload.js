@@ -1,31 +1,56 @@
 // middleware/upload.js
 import multer from "multer";
-import path from "path";
 
+// Disk storage (save to /tmp for GCP App Engine compatibility)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // ya /tmp, jahan bhi rakha hai
+    cb(null, "/tmp"); // GCP App Engine compatible
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
+    const filename = `${uniqueSuffix}-${file.originalname}`;
+    cb(null, filename);
   },
 });
 
+// File filter - only images and PDFs
 const fileFilter = (req, file, cb) => {
-  if (
-    file.mimetype.startsWith("image/") ||
-    file.mimetype === "application/pdf"
-  ) {
+  const allowedMime = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "application/pdf"
+  ];
+
+  if (allowedMime.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Only image or PDF allowed"), false);
+    cb(new Error("Only images (JPEG, PNG, GIF) and PDFs are allowed!"), false);
   }
 };
 
-export const upload = multer({
+// Create upload middleware
+const upload = multer({
   storage,
-  limits: {
-    fileSize: 2 * 1024 * 1024, // ✅ 2 MB per file
-  },
   fileFilter,
+  limits: { fileSize: 3 * 1024 * 1024 }, // 3MB
 });
+
+// PDF-only filter
+const pdfFileFilter = (req, file, cb) => {
+  if (file.mimetype === "application/pdf") {
+    cb(null, true);
+  } else {
+    cb(new Error("Only PDF files are allowed!"), false);
+  }
+};
+
+// PDF upload middleware
+export const uploadCompiledPDF = multer({
+  storage,
+  fileFilter: pdfFileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+}).single("compiledFile");
+
+export default upload;

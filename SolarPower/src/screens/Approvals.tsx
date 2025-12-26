@@ -1,5 +1,6 @@
 // src/screens/Approvals.tsx
 import React, { useEffect, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ScrollView,
   View,
@@ -9,43 +10,64 @@ import {
   Pressable,
   Linking,
   Modal,
+  TextInput,
+  Alert,
 } from "react-native";
+import { pick, types } from "@react-native-documents/picker";
 import {
   ClipboardCheck,
   Users,
   Phone,
   MapPin,
   FileText,
+  Upload,
   IndianRupee,
+  Search,
+  X,
+  Trash2,
+  Download,
 } from "lucide-react-native";
 
 import { useAdminLeadsStore } from "../stores/leadStore";
+import { useCompiledFileStore } from "../stores/compiledFileStore";
+import { useAdminAuthStore } from "../stores/adminAuthStore";
 import type { LeadStatus } from "../services/leadService";
 
-// 🔁 Status flow – dropdown/modal me isi order me dikhayenge
+// 🔁 Status flow – dropdown/modal me isi order me dikhायेंगे
 const STATUS_FLOW: LeadStatus[] = [
-  "UNDER_DISCUSSION",
-  "DOCUMENT_RECEIVED",
-  "DOCUMENT_UPLOAD_OVER_PORTAL",
-  "FILE_SEND_TO_BANK",
-  "FUNDS_DISBURSED_BY_BANK",
-  "MERGED_DOCUMENT_UPLOAD",
-  "MATERIAL_DELIVERED",
+  "INTERESTED_CUSTOMERS",
+  "DOCUMENTS_RECEIVED",
+  "DOCUMENTS_UPLOADED_ON_PORTAL",
+  "FILE_SENT_TO_BANK",
+  "PAYMENT_RECEIVED",
+  "SYSTEM_DELIVERED",
   "SYSTEM_INSTALLED",
   "SYSTEM_COMMISSIONED",
   "SUBSIDY_REDEEMED",
-  "LEAD_CLOSED",
-  "REFERRAL_RECEIVED",
+  "SUBSIDY_DISBURSED",
+  "LEAD_CLOSE",
 ];
 
 const Approvals: React.FC = () => {
+  const insets = useSafeAreaInsets();
+
   const { leads, loading, error, fetchAllLeads, updateLeadStatus } =
     useAdminLeadsStore();
+
+  const { tokens } = useAdminAuthStore();
+
+  const {
+    uploadCompiledFile,
+    deleteCompiledFile,
+    uploading,
+    deleting,
+  } = useCompiledFileStore();
 
   // 🔽 kis lead ka status modal open hai (null = band)
   const [statusModalLeadId, setStatusModalLeadId] = useState<string | null>(
     null
   );
+  const [searchText, setSearchText] = useState("");
 
   // First load
   useEffect(() => {
@@ -53,7 +75,16 @@ const Approvals: React.FC = () => {
   }, [fetchAllLeads]);
 
   const onRefresh = () => {
-    fetchAllLeads();
+    fetchAllLeads(searchText || undefined);
+  };
+
+  const handleSearch = () => {
+    fetchAllLeads(searchText.trim());
+  };
+
+  const handleClearSearch = () => {
+    setSearchText("");
+    fetchAllLeads("");
   };
 
   const openCall = (phone: string) => {
@@ -75,6 +106,24 @@ const Approvals: React.FC = () => {
     Linking.openURL(url);
   };
 
+  const downloadUrl = (url?: string, customFileName?: string) => {
+    if (!url) return;
+
+    // ☁️ Cloudinary Force Download Logic
+    let downloadLink = url;
+    if (url.includes("cloudinary.com") && url.includes("/upload/")) {
+      if (customFileName) {
+        // Sanitize filename: remove spaces/special chars
+        const safeName = customFileName.replace(/[^a-zA-Z0-9-_]/g, "_");
+        downloadLink = url.replace("/upload/", `/upload/fl_attachment:${safeName}/`);
+      } else {
+        downloadLink = url.replace("/upload/", "/upload/fl_attachment/");
+      }
+    }
+
+    Linking.openURL(downloadLink);
+  };
+
   const formatStatus = (status: string) =>
     status
       .replaceAll("_", " ")
@@ -89,37 +138,31 @@ const Approvals: React.FC = () => {
 
   const getStatusColorClasses = (status: LeadStatus) => {
     switch (status) {
-      case "UNDER_DISCUSSION":
+      case "INTERESTED_CUSTOMERS":
         return {
           bg: "bg-slate-100",
           border: "border-slate-200",
           text: "text-slate-700",
         };
-      case "DOCUMENT_RECEIVED":
-      case "DOCUMENT_UPLOAD_OVER_PORTAL":
-      case "FILE_SEND_TO_BANK":
-      case "FUNDS_DISBURSED_BY_BANK":
-      case "MERGED_DOCUMENT_UPLOAD":
-      case "MATERIAL_DELIVERED":
+      case "DOCUMENTS_RECEIVED":
+      case "DOCUMENTS_UPLOADED_ON_PORTAL":
+      case "FILE_SENT_TO_BANK":
+      case "PAYMENT_RECEIVED":
+      case "SYSTEM_DELIVERED":
       case "SYSTEM_INSTALLED":
       case "SYSTEM_COMMISSIONED":
       case "SUBSIDY_REDEEMED":
+      case "SUBSIDY_DISBURSED":
         return {
           bg: "bg-emerald-50",
           border: "border-emerald-100",
           text: "text-emerald-700",
         };
-      case "LEAD_CLOSED":
+      case "LEAD_CLOSE":
         return {
           bg: "bg-emerald-100",
           border: "border-emerald-200",
           text: "text-emerald-800",
-        };
-      case "REFERRAL_RECEIVED":
-        return {
-          bg: "bg-sky-50",
-          border: "border-sky-100",
-          text: "text-sky-700",
         };
       default:
         return {
@@ -147,11 +190,96 @@ const Approvals: React.FC = () => {
       ? leads.find((l) => l._id === statusModalLeadId) || null
       : null;
 
+  // 📄 Handle PDF upload
+  const handleUploadCompiledFile = async (leadId: string) => {
+    try {
+      const result = await pick({
+        type: [types.pdf],
+        copyTo: "cachesDirectory",
+      });
+
+      const file = result[0];
+
+      // Validate file size (5MB max)
+      if (file.size && file.size > 5 * 1024 * 1024) {
+        Alert.alert("File Too Large", "Please select a PDF file smaller than 5MB");
+        return;
+      }
+
+      if (!tokens?.accessToken) {
+        Alert.alert("Error", "Please login again");
+        return;
+      }
+
+      await uploadCompiledFile(
+        leadId,
+        {
+          uri: file.uri,
+          name: file.name || "compiled.pdf",
+          type: file.type || "application/pdf",
+        },
+        tokens.accessToken
+      );
+
+      Alert.alert("Success", "Compiled file uploaded successfully");
+      // Refresh leads to show updated compiledFile
+      fetchAllLeads();
+    } catch (err: any) {
+      if (err && err.message) {
+        Alert.alert("Error", err.message || "Failed to upload file");
+      }
+      // User cancelled - do nothing
+    }
+  };
+
+  // 🗑️ Handle PDF delete
+  const handleDeleteCompiledFile = (leadId: string) => {
+    Alert.alert(
+      "Delete Compiled File",
+      "Are you sure you want to delete this file?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            if (!tokens?.accessToken) return;
+            await deleteCompiledFile(leadId, tokens.accessToken);
+            Alert.alert("Success", "Compiled file deleted");
+            fetchAllLeads();
+          },
+        },
+      ]
+    );
+  };
+
+  // Skeleton loader component
+  const SkeletonCard = () => (
+    <View className="mb-3 rounded-2xl bg-white border border-emerald-100 shadow-sm px-3 py-3">
+      <View className="flex-row justify-between mb-2">
+        <View className="flex-1">
+          <View className="h-4 w-32 bg-slate-200 rounded mb-2" />
+          <View className="h-3 w-24 bg-slate-100 rounded mb-1" />
+          <View className="h-3 w-40 bg-slate-100 rounded" />
+        </View>
+        <View className="items-end">
+          <View className="h-6 w-20 bg-slate-200 rounded-full mb-1" />
+          <View className="h-3 w-16 bg-slate-100 rounded" />
+        </View>
+      </View>
+      <View className="flex-row items-center mt-2">
+        <View className="h-3 w-28 bg-slate-100 rounded mr-2" />
+        <View className="h-7 w-7 bg-slate-100 rounded-full ml-auto" />
+        <View className="h-7 w-7 bg-slate-100 rounded-full ml-2" />
+      </View>
+    </View>
+  );
+
   return (
     <>
       <ScrollView
         className="flex-1 bg-emerald-50"
-        contentContainerStyle={{ padding: 12, paddingBottom: 32 }}
+        contentContainerStyle={{ paddingTop: insets.top + 12, padding: 12, paddingBottom: 32 }}
         refreshControl={
           <RefreshControl
             refreshing={loading && leads.length > 0}
@@ -169,6 +297,34 @@ const Approvals: React.FC = () => {
           </Text>
         </View>
 
+        {/* Search Box */}
+        <View className="mb-3 px-1">
+          <View className="flex-row items-center bg-white rounded-xl border border-emerald-100 px-3 py-2.5">
+            <Search size={18} color="#6b7280" />
+            <TextInput
+              className="flex-1 ml-2 text-sm text-slate-900"
+              placeholder="Search by contact number..."
+              placeholderTextColor="#9ca3af"
+              value={searchText}
+              onChangeText={setSearchText}
+              keyboardType="phone-pad"
+              returnKeyType="search"
+              onSubmitEditing={handleSearch}
+            />
+            {searchText.length > 0 && (
+              <Pressable onPress={handleClearSearch} className="p-1">
+                <X size={16} color="#6b7280" />
+              </Pressable>
+            )}
+          </View>
+          <Pressable
+            onPress={handleSearch}
+            className="mt-2 bg-emerald-600 rounded-xl py-2.5 items-center active:opacity-80"
+          >
+            <Text className="text-white text-sm font-semibold">Search</Text>
+          </Pressable>
+        </View>
+
         {/* Error */}
         {error && (
           <View className="mb-3 rounded-xl bg-red-50 px-3 py-2">
@@ -176,13 +332,12 @@ const Approvals: React.FC = () => {
           </View>
         )}
 
-        {/* First load loader */}
+        {/* Skeleton Loading */}
         {loading && leads.length === 0 ? (
-          <View className="mt-10 items-center">
-            <ActivityIndicator size="small" color="#059669" />
-            <Text className="mt-2 text-slate-500 text-xs">
-              Loading leads...
-            </Text>
+          <View>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
           </View>
         ) : null}
 
@@ -266,7 +421,7 @@ const Approvals: React.FC = () => {
                 </View>
               </View>
 
-              {/* Address + GPS */}
+              {/* Address */}
               <View className="mt-1">
                 <Text className="text-[11px] text-slate-500 mb-0.5">
                   Address
@@ -274,62 +429,60 @@ const Approvals: React.FC = () => {
                 <Text className="text-[11px] text-slate-800">
                   {lead.addressText}
                 </Text>
-
-                {lead.gpsLocation ? (
-                  <Pressable
-                    onPress={() => openUrl(lead.gpsLocation)}
-                    className="mt-1 flex-row items-center"
-                  >
-                    <MapPin size={12} color="#0369a1" />
-                    <Text className="ml-1 text-[10px] text-sky-700 underline">
-                      Open location
-                    </Text>
-                  </Pressable>
-                ) : null}
               </View>
 
               {/* Capacity + Amount chips */}
               <View className="mt-2 flex-row flex-wrap">
-                {lead.rtsCapacityKw !== undefined && (
+                {lead.requiredSystemCapacity && (
                   <View className="mr-2 mb-1 px-2 py-1 rounded-full bg-emerald-50">
                     <Text className="text-[10px] text-emerald-800">
-                      RTS: {lead.rtsCapacityKw} kW
+                      Capacity: {lead.requiredSystemCapacity}
                     </Text>
                   </View>
                 )}
-                {lead.roofTopCapacityKw !== undefined && (
-                  <View className="mr-2 mb-1 px-2 py-1 rounded-full bg-emerald-50">
-                    <Text className="text-[10px] text-emerald-800">
-                      Roof Top: {lead.roofTopCapacityKw} kW
-                    </Text>
-                  </View>
-                )}
-                {lead.tropositeAmount !== undefined && (
+                {lead.systemCostQuoted !== undefined && (
                   <View className="mr-2 mb-1 px-2 py-1 rounded-full bg-emerald-50 flex-row items-center">
                     <IndianRupee size={10} color="#047857" />
                     <Text className="text-[10px] text-emerald-800 ml-0.5">
-                      {lead.tropositeAmount}
+                      {lead.systemCostQuoted}
                     </Text>
                   </View>
                 )}
               </View>
 
               {/* Bank details */}
-              {(lead.bankName || lead.bankDetails) && (
+              {(lead.bankAccountName || lead.ifscCode || lead.branchDetails) && (
                 <View className="mt-2">
                   <Text className="text-[11px] text-slate-500 mb-0.5">
                     Bank Details
                   </Text>
-                  {lead.bankName && (
+                  {lead.bankAccountName && (
                     <Text className="text-[11px] text-slate-800">
-                      Bank: {lead.bankName}
+                      Account: {lead.bankAccountName}
                     </Text>
                   )}
-                  {lead.bankDetails && (
+                  {lead.ifscCode && (
                     <Text className="text-[11px] text-slate-800">
-                      {lead.bankDetails}
+                      IFSC: {lead.ifscCode}
                     </Text>
                   )}
+                  {lead.branchDetails && (
+                    <Text className="text-[11px] text-slate-800">
+                      Branch: {lead.branchDetails}
+                    </Text>
+                  )}
+                </View>
+              )}
+
+              {/* Instructions */}
+              {lead.textInstructions && (
+                <View className="mt-2">
+                  <Text className="text-[11px] text-slate-500 mb-0.5">
+                    Instructions
+                  </Text>
+                  <Text className="text-[11px] text-slate-800 italic">
+                    {lead.textInstructions}
+                  </Text>
                 </View>
               )}
 
@@ -347,7 +500,7 @@ const Approvals: React.FC = () => {
                     <Pressable
                       key={idx}
                       onPress={() => openUrl(doc.fileUrl)}
-                      className="flex-row items-center justify-between py-1"
+                      className="flex-row items-center justify-between py-1 my-0.5"
                     >
                       <View className="flex-row items-center flex-1 pr-2">
                         <Text
@@ -358,13 +511,87 @@ const Approvals: React.FC = () => {
                         </Text>
                       </View>
 
-                      <Text className="text-[10px] text-emerald-700 underline">
-                        View
-                      </Text>
+                      <View className="flex-row items-center">
+                        <Text className="text-[10px] text-emerald-700 underline mr-3">
+                          View
+                        </Text>
+                        <Pressable
+                          onPress={() => {
+                            const extension = doc.fileUrl.split('.').pop();
+                            const docName = getDocLabel(doc.fileName).replace(/\s+/g, '_');
+                            // Create clean filename: 9876543210_Aadhaar_Card
+                            const downloadName = `${lead.contactNumber}_${docName}`; // Cloudinary adds extension automatically if not in name, but safest to just name it properly
+                            downloadUrl(doc.fileUrl, downloadName);
+                          }}
+                          className="p-1 rounded-full bg-emerald-50"
+                        >
+                          <Download size={10} color="#059669" />
+                        </Pressable>
+                      </View>
                     </Pressable>
                   ))}
                 </View>
               )}
+
+              {/* Compiled File Section */}
+              <View className="mt-2 pt-2 border-t border-dashed border-blue-100">
+                <View className="flex-row items-center justify-between mb-2">
+                  <View className="flex-row items-center">
+                    <FileText size={13} color="#2563eb" />
+                    <Text className="ml-1 text-[11px] font-semibold text-blue-700">
+                      Compiled File
+                    </Text>
+                  </View>
+                </View>
+
+                {lead.compiledFile ? (
+                  <View className="flex-row items-center justify-between bg-blue-50 rounded-lg px-2 py-2">
+                    <Pressable
+                      onPress={() => openUrl(lead.compiledFile)}
+                      className="flex-1 flex-row items-center"
+                    >
+                      <FileText size={12} color="#2563eb" />
+                      <Text className="text-[10px] text-blue-700 ml-1 flex-1" numberOfLines={1}>
+                        View Compiled PDF
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => downloadUrl(lead.compiledFile)}
+                      className="ml-2 p-1 rounded bg-blue-100"
+                    >
+                      <Download size={12} color="#2563eb" />
+                    </Pressable>
+                    <Pressable
+                      onPress={() => handleDeleteCompiledFile(lead._id)}
+                      disabled={deleting}
+                      className="ml-2 p-1 rounded bg-red-50"
+                    >
+                      {deleting ? (
+                        <ActivityIndicator size="small" color="#dc2626" />
+                      ) : (
+                        <Trash2 size={12} color="#dc2626" />
+                      )}
+                    </Pressable>
+                  </View>
+                ) : (
+                  <Pressable
+                    onPress={() => handleUploadCompiledFile(lead._id)}
+                    disabled={uploading}
+                    className="flex-row items-center justify-center bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 active:opacity-70"
+                  >
+                    {uploading ? (
+                      <ActivityIndicator size="small" color="#2563eb" />
+                    ) : (
+                      <>
+                        <Upload size={12} color="#2563eb" />
+                        <Text className="text-[10px] text-blue-700 ml-1 font-medium">
+                          Upload Compiled PDF (Max 5MB)
+                        </Text>
+                      </>
+                    )}
+                  </Pressable>
+                )}
+              </View>
             </View>
           );
         })}
@@ -405,16 +632,14 @@ const Approvals: React.FC = () => {
                         selectedLead &&
                         onSelectStatus(selectedLead._id, st)
                       }
-                      className={`px-3 py-1.5 mb-1 rounded-xl flex-row items-center justify-between ${
-                        isActive ? "bg-emerald-50" : "bg-slate-50"
-                      }`}
+                      className={`px-3 py-1.5 mb-1 rounded-xl flex-row items-center justify-between ${isActive ? "bg-emerald-50" : "bg-slate-50"
+                        }`}
                     >
                       <Text
-                        className={`text-[11px] ${
-                          isActive
-                            ? "font-semibold " + stClasses.text
-                            : "text-slate-700"
-                        }`}
+                        className={`text-[11px] ${isActive
+                          ? "font-semibold " + stClasses.text
+                          : "text-slate-700"
+                          }`}
                       >
                         {formatStatus(st)}
                       </Text>

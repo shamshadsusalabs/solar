@@ -8,6 +8,7 @@ import {
   loginAdminService,
   refreshAdminTokenService,
   logoutAdminService,
+  updateAdminProfileService,
 } from "../services/adminAuthService";
 import { ADMIN_AUTH_STORAGE_KEY } from "../constants/storage";
 
@@ -21,6 +22,11 @@ type AdminAuthState = {
   // actions
   initAdminAuthFromStorage: () => Promise<void>;
   loginAdmin: (email: string, password: string) => Promise<boolean>;
+  updateAdminProfile: (data: {
+    email?: string;
+    phoneNumber?: string;
+    password?: string;
+  }) => Promise<boolean>;
   refreshAdminTokens: () => Promise<boolean>;
   logoutAdmin: () => Promise<void>;
 };
@@ -34,7 +40,7 @@ const saveAdminAuthToStorage = async (state: {
   try {
     await AsyncStorage.setItem(ADMIN_AUTH_STORAGE_KEY, JSON.stringify(state));
   } catch (err) {
-    console.log("saveAdminAuthToStorage error:", err);
+    // Silent error - storage write failed
   }
 };
 
@@ -43,7 +49,7 @@ const clearAdminAuthStorage = async () => {
   try {
     await AsyncStorage.removeItem(ADMIN_AUTH_STORAGE_KEY);
   } catch (err) {
-    console.log("clearAdminAuthStorage error:", err);
+    // Silent error - storage clear failed
   }
 };
 
@@ -68,7 +74,7 @@ export const useAdminAuthStore = create<AdminAuthState>((set, get) => ({
         tokens: parsed.tokens ?? null,
       });
     } catch (err) {
-      console.log("initAdminAuthFromStorage error:", err);
+      // Silent error - failed to load admin auth from storage
     }
   },
 
@@ -103,12 +109,58 @@ export const useAdminAuthStore = create<AdminAuthState>((set, get) => ({
     }
   },
 
+  // 📝 Update admin profile
+  updateAdminProfile: async (data) => {
+    const { tokens } = get();
+    const accessToken = tokens?.accessToken;
+
+    if (!accessToken) {
+      set({ error: "No access token available" });
+      return false;
+    }
+
+    set({ loading: true, error: null });
+
+    try {
+      const response = await updateAdminProfileService(data, accessToken);
+
+      // Update admin in state
+      const updatedAdmin: Admin = {
+        id: response.admin.id,
+        email: response.admin.email,
+        phoneNumber: response.admin.phoneNumber,
+        role: "admin", // Always admin for this store
+      };
+
+      const newState = {
+        role: get().role,
+        admin: updatedAdmin,
+        tokens: get().tokens,
+      };
+
+      set({
+        admin: updatedAdmin,
+        loading: false,
+        error: null,
+      });
+
+      await saveAdminAuthToStorage(newState);
+
+      return true;
+    } catch (err: any) {
+      set({
+        loading: false,
+        error: err?.message || "Failed to update profile",
+      });
+      return false;
+    }
+  },
+
   // ♻️ Admin refresh token
   refreshAdminTokens: async () => {
     const { tokens } = get();
 
     if (!tokens?.refreshToken) {
-      console.log("No refreshToken, cannot refresh (admin)");
       return false;
     }
 
@@ -129,7 +181,8 @@ export const useAdminAuthStore = create<AdminAuthState>((set, get) => ({
 
       return true;
     } catch (err) {
-      console.log("refreshAdminTokens error:", err);
+      // Token refresh failed - silently logout
+      await get().logoutAdmin();
       return false;
     }
   },
@@ -144,7 +197,7 @@ export const useAdminAuthStore = create<AdminAuthState>((set, get) => ({
         await logoutAdminService(accessToken);
       }
     } catch (err) {
-      console.log("logoutAdmin api error (ignoring):", err);
+      // Silent error - logout API call failed, continue cleanup anyway
     }
 
     await clearAdminAuthStorage();

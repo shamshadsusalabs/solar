@@ -33,17 +33,17 @@ export const getEmployeeDashboard = async (req, res) => {
       status: { $in: closedStatuses },
     });
 
-    // 3) Total tropositeAmount sum
+    // 3) Total systemCostQuoted sum
     const amountAgg = await Lead.aggregate([
       { $match: { salesManId: salesManObjectId } },
       {
         $group: {
           _id: null,
-          total: { $sum: "$tropositeAmount" },
+          total: { $sum: "$systemCostQuoted" },
         },
       },
     ]);
-    const totalTropositeAmount = amountAgg[0]?.total || 0;
+    const totalSystemCostQuoted = amountAgg[0]?.total || 0;
 
     // 4) Total documents uploaded by this employee (all leads)
     const docsAgg = await Lead.aggregate([
@@ -88,7 +88,7 @@ export const getEmployeeDashboard = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(5)
       .select(
-        "customerName contactNumber addressText status tropositeAmount createdAt"
+        "customerName contactNumber addressText status systemCostQuoted createdAt"
       )
       .lean();
 
@@ -99,7 +99,7 @@ export const getEmployeeDashboard = async (req, res) => {
           totalLeads,
           activeLeads,
           closedLeads,
-          totalTropositeAmount,
+          totalSystemCostQuoted,
           totalDocuments,
         },
         statusSummary,

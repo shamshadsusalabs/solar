@@ -1,50 +1,36 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import React, { useEffect } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { View, Text, ScrollView } from "react-native";
 import { SunMedium, FileText, Users, IndianRupee } from "lucide-react-native";
 
-import { useEmployeeAuthStore } from "../stores/employeeAuthStore";
-import {
-  getEmployeeDashboardService,
-  EmployeeDashboardTotals,
-  EmployeeStatusSummaryItem,
-  EmployeeRecentLead,
-} from "../services/employeeDashboardService";
+import { useEmployeeAuthStore } from "../../stores/employeeAuthStore";
+import { useEmployeeDashboardStore } from "../../stores/employeeDashboardStore";
 
 const EmployeeDashboardScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const { tokens, employee } = useEmployeeAuthStore();
-  const [totals, setTotals] = useState<EmployeeDashboardTotals | null>(null);
-  const [statusSummary, setStatusSummary] = useState<
-    EmployeeStatusSummaryItem[]
-  >([]);
-  const [recentLeads, setRecentLeads] = useState<EmployeeRecentLead[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchDashboard = async () => {
-    if (!tokens?.accessToken) {
-      setError("Employee not logged in");
-      return;
-    }
+  // Dashboard data from store (with caching)
+  const {
+    totals,
+    statusSummary,
+    recentLeads,
+    loading,
+    error,
+    initDashboardFromStorage,
+    fetchDashboard,
+  } = useEmployeeDashboardStore();
 
-    try {
-      setLoading(true);
-      setError(null);
-
-      const res = await getEmployeeDashboardService(tokens.accessToken);
-      setTotals(res.data.totals);
-      setStatusSummary(res.data.statusSummary);
-      setRecentLeads(res.data.recentLeads);
-    } catch (err: any) {
-      console.log("employee dashboard error:", err);
-      setError(err?.message || "Failed to load dashboard");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Init from storage and fetch fresh data
+  useEffect(() => {
+    initDashboardFromStorage(); // Load cached data immediately
+  }, []);
 
   useEffect(() => {
-    fetchDashboard();
-  }, []);
+    if (tokens?.accessToken) {
+      fetchDashboard(tokens.accessToken); // Fetch fresh data
+    }
+  }, [tokens?.accessToken]);
 
   const formatStatus = (status: string) =>
     status
@@ -52,10 +38,22 @@ const EmployeeDashboardScreen: React.FC = () => {
       .toLowerCase()
       .replace(/^\w/, (c) => c.toUpperCase());
 
+  // Skeleton loader components
+  const SkeletonCard = () => (
+    <View className="bg-white rounded-2xl p-3.5 shadow-sm border border-emerald-50">
+      <View className="flex-row justify-between mb-1.5">
+        <View className="h-3 w-20 bg-slate-100 rounded" />
+        <View className="h-7 w-7 bg-slate-100 rounded-full" />
+      </View>
+      <View className="h-6 w-16 bg-slate-200 rounded mb-2" />
+      <View className="h-3 w-32 bg-slate-100 rounded" />
+    </View>
+  );
+
   return (
     <ScrollView
-      className="flex-1 bg-emerald-50 px-4 pt-4"
-      contentContainerStyle={{ paddingBottom: 20 }}
+      className="flex-1 bg-emerald-50 px-4"
+      contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 20 }}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
@@ -75,13 +73,13 @@ const EmployeeDashboardScreen: React.FC = () => {
         </View>
       )}
 
-      {/* Loader */}
+      {/* Skeleton Loading */}
       {loading && !totals && (
-        <View className="mt-6 items-center">
-          <ActivityIndicator size="small" color="#059669" />
-          <Text className="mt-2 text-[12px] text-slate-500">
-            Loading dashboard...
-          </Text>
+        <View className="flex-row flex-wrap -mx-1 mb-4 mt-1">
+          <View className="w-1/2 px-1 mb-3"><SkeletonCard /></View>
+          <View className="w-1/2 px-1 mb-3"><SkeletonCard /></View>
+          <View className="w-1/2 px-1 mb-3"><SkeletonCard /></View>
+          <View className="w-1/2 px-1 mb-3"><SkeletonCard /></View>
         </View>
       )}
 
@@ -159,7 +157,7 @@ const EmployeeDashboardScreen: React.FC = () => {
               </View>
             </View>
             <Text className="text-xl font-semibold text-emerald-900">
-              ₹ {totals?.totalTropositeAmount ?? 0}
+              ₹ {totals?.totalSystemCostQuoted ?? 0}
             </Text>
             <Text className="text-[11px] text-slate-400 mt-1">
               Sabhi leads ka combined amount
@@ -208,11 +206,10 @@ const EmployeeDashboardScreen: React.FC = () => {
           recentLeads.map((lead, index) => (
             <View
               key={index}
-              className={`py-2 ${
-                index !== recentLeads.length - 1
-                  ? "border-b border-emerald-50"
-                  : ""
-              }`}
+              className={`py-2 ${index !== recentLeads.length - 1
+                ? "border-b border-emerald-50"
+                : ""
+                }`}
             >
               <View className="flex-row justify-between mb-1">
                 <Text className="text-[12px] font-semibold text-slate-800">

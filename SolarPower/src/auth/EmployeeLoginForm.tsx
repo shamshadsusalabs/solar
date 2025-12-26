@@ -23,8 +23,7 @@ const EmployeeLoginForm: React.FC = () => {
       return setLocalError("Please enter employee code & password.");
     }
 
-    const success = await loginEmployee(employeeCode.trim(), password);
-    console.log("Employee login success:", success);
+    await loginEmployee(employeeCode.trim(), password);
     // App.tsx role se redirect karega EmployeeRootScreen pe
   };
 
@@ -77,9 +76,8 @@ const EmployeeLoginForm: React.FC = () => {
       <Pressable
         onPress={onLogin}
         disabled={loading}
-        className={`rounded-2xl py-3.5 items-center active:opacity-85 shadow-md shadow-emerald-300 ${
-          loading ? "bg-emerald-300" : "bg-emerald-500"
-        }`}
+        className={`rounded-2xl py-3.5 items-center active:opacity-85 shadow-md shadow-emerald-300 ${loading ? "bg-emerald-300" : "bg-emerald-500"
+          }`}
       >
         {loading ? (
           <ActivityIndicator color="#ffffff" />

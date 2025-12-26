@@ -1,9 +1,10 @@
+import dotenv from "dotenv";
+dotenv.config();
 import jwt from "jsonwebtoken";
 
-// ⚠️ Tum env nahi use karna chahte, isliye yahan hard-coded rakha hai.
-// Production me inhe strong random string bana dena.
-const ACCESS_TOKEN_SECRET = "your-access-token-secret-key";
-const REFRESH_TOKEN_SECRET = "your-refresh-token-secret-key";
+// ✅ Using environment variables for security
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || "fallback-access-secret-key";
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || "fallback-refresh-secret-key";
 
 const ACCESS_TOKEN_EXPIRY = "7d";
 const REFRESH_TOKEN_EXPIRY = "30d";
@@ -11,7 +12,7 @@ const REFRESH_TOKEN_EXPIRY = "30d";
 export const generateTokens = (user) => {
   const payload = {
     id: user._id,
-    role: user.role, // "admin" ya "employee"
+    role: user.role, // "admin", "employee", "manager", "store"
   };
 
   const accessToken = jwt.sign(payload, ACCESS_TOKEN_SECRET, {

@@ -2,18 +2,28 @@ import mongoose from "mongoose";
 
 /* ========= STATUS MASTER ========= */
 export const LEAD_STATUS = [
-  "UNDER_DISCUSSION",
-  "DOCUMENT_RECEIVED",
-  "DOCUMENT_UPLOAD_OVER_PORTAL",
-  "FILE_SEND_TO_BANK",
-  "FUNDS_DISBURSED_BY_BANK",
-  "MERGED_DOCUMENT_UPLOAD",
-  "MATERIAL_DELIVERED",
+  "INTERESTED_CUSTOMERS",
+  "DOCUMENTS_RECEIVED",
+  "DOCUMENTS_UPLOADED_ON_PORTAL",
+  "FILE_SENT_TO_BANK",
+  "PAYMENT_RECEIVED",
+  "SYSTEM_DELIVERED",
   "SYSTEM_INSTALLED",
   "SYSTEM_COMMISSIONED",
   "SUBSIDY_REDEEMED",
-  "LEAD_CLOSED",
-  "REFERRAL_RECEIVED",
+  "SUBSIDY_DISBURSED",
+  "LEAD_CLOSE",
+];
+
+/* ========= BANK MASTER ========= */
+export const BANK_NAMES = [
+  "SBI",
+  "HDFC",
+  "ICICI",
+  "Canara Bank",
+  "Punjab National Bank",
+  "Jammu & Kashmir Bank",
+  "Other",
 ];
 
 /* ========= DOCUMENT SUB-SCHEMA ========= */
@@ -33,6 +43,7 @@ const leadSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employee",
       required: true,
+      index: true, // ✅ Index for fast queries
     },
 
     /* Sale Man Display Info */
@@ -47,6 +58,7 @@ const leadSchema = new mongoose.Schema(
       required: true,
       trim: true,
       uppercase: true,
+      index: true, // ✅ Index for fast employee code search
     },
 
     /* Customer */
@@ -60,6 +72,7 @@ const leadSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      index: true, // ✅ Index for fast contact search
     },
 
     /* Address */
@@ -69,39 +82,51 @@ const leadSchema = new mongoose.Schema(
       trim: true,
     },
 
-    gpsLocation: {
-      type: String,
-      default: "",
-    },
-
     /* Documents */
     documents: [documentSchema],
 
-    /* Capacities */
-    rtsCapacityKw: {
-      type: Number,
-      default: 0,
-    },
-
-    roofTopCapacityKw: {
-      type: Number,
-      default: 0,
-    },
-
-    /* Amount */
-    tropositeAmount: {
-      type: Number,
-      default: 0,
-    },
-
-    /* ✅ BANK (Clean) */
-    bankName: {
+    /* ✅ Required System Capacity (ALPHANUMERIC - e.g., "20 kw") */
+    requiredSystemCapacity: {
       type: String,
       trim: true,
       default: "",
     },
 
-    bankDetails: {
+    /* ✅ System Cost Quoted (NUMERIC) */
+    systemCostQuoted: {
+      type: Number,
+      default: 0,
+    },
+
+    /* ✅ Bank Account Name (ALPHA) */
+    bankAccountName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    /* ✅ Bank Branch Name and Details (ALPHANUMERIC) */
+    branchDetails: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    ifscCode: {
+      type: String,
+      trim: true,
+      uppercase: true,
+      default: "",
+    },
+
+    textInstructions: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    /* ✅ Compiled File URL (from Cloudinary) */
+    compiledFile: {
       type: String,
       trim: true,
       default: "",
@@ -110,8 +135,9 @@ const leadSchema = new mongoose.Schema(
     /* Status Flow */
     status: {
       type: String,
+
       enum: LEAD_STATUS,
-      default: "UNDER_DISCUSSION",
+      default: "INTERESTED_CUSTOMERS",
     },
   },
   {
