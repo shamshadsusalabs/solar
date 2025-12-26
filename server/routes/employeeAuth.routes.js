@@ -13,7 +13,7 @@ import {
   verifyEmployeeAadhaar, // ✅ Admin Aadhaar verification
 } from "../controllers/employeeAuth.controller.js";
 import { auth, requireRole } from "../middleware/auth.middleware.js";
-import { upload } from "../middleware/upload.js"; // ✅ Use central upload middleware
+import upload from "../middleware/upload.js"; // ✅ Use default export
 const router = Router();
 
 // Public
